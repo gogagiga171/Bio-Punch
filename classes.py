@@ -89,14 +89,20 @@ class Vector:
     def to_tuple(self):
         return (self.x, self.y)
 
+    def angle_deg(self):
+        return math.degrees(math.atan2(self.y, self.x))
+
+    def is_collinear(self, other, eps=1e-6):
+        return abs(self.cross(other)) <= eps
+
 class Line:
     def __init__(self, a, b):
-        if a.x < b.x:
+        if a.x <= b.x:
             self.a = Vector(a)
             self.b = Vector(b)
         else:
-            self.b = Vector(a)
             self.a = Vector(b)
+            self.b = Vector(a)
 
     @property
     def vector(self):
@@ -121,9 +127,24 @@ class Line:
         t = max(0, min(1, ap.dot(ab) / (self.length * self.length)))
         return self.a + ab * t
 
+    def is_colliding(self, line):
+        v1 = (self.a - line.a).cross(self.a - self.b)
+        v2 = (self.a - line.b).cross(self.a - self.b)
+        if v1*v2>0:
+            return False
+        v3 = (line.a - self.a).cross(line.a - line.b)
+        v4 = (line.a - self.b).cross(line.a - line.b)
+        if v3*v4>0:
+            return False
+        return True
+
+    def __str__(self):
+        return f"Line(a={self.a}, b={self.b})"
+
 class Obstacle:
     def __init__(self, dots):
         self.lines = [Line(dots[x], dots[x+1]) for x in range(len(dots)-1)]
+        self.lines.append(Line(dots[0], dots[-1]))
         self.dots = dots
 
     def tuple_dots(self):
@@ -143,78 +164,40 @@ class Player:
         self.jump = 500
         self.vel = Vector((0, 0))
         self.pos = Vector((WIDTH/2, HEIGHT/2+self.height/2))
-        self.surf = pygame.Surface((self.width, self.height))
+        self.surf = pygame.Surface((self.width+1, self.height+1))
         self.surf.fill((100, 255, 100))
         self.on_ground = False
         self.ground_normal = Vector((0, 1))
         self.ground_line = None
 
-    @property
-    def rect_points(self):
-        """Возвращает 4 точки прямоугольника персонажа"""
-        half_w = self.width / 2
-        return [
-            Vector((self.pos.x - half_w, self.pos.y)),  # нижний левый
-            Vector((self.pos.x + half_w, self.pos.y)),  # нижний правый
-            Vector((self.pos.x + half_w, self.pos.y - self.height)),  # верхний правый
-            Vector((self.pos.x - half_w, self.pos.y - self.height))  # верхний левый
-        ]
-
-    @property
-    def bounding_box(self):
-        """Минимальная и максимальная точки AABB"""
-        half_w = self.width / 2
-        return (
-            Vector((self.pos.x - half_w, self.pos.y - self.height)),  # min
-            Vector((self.pos.x + half_w, self.pos.y))  # max
-        )
-
     def draw(self, screen: pygame.surface.Surface):
         screen.blit(self.surf, (self.pos.x-self.width/2, self.pos.y - self.height))
 
     def check_collision(self, line):
-        x0, y0 = line.a.x, line.a.y
-        x1, y1 = line.b.x, line.b.y
-
-        dx = x1 - x0
-        dy = y1 - y0
-
-        left = self.pos.x - self.width / 2
-        right = self.pos.x + self.width / 2
-        top = self.pos.y - self.height
-        bottom = self.pos.y
-
-        t0 = 0.0
-        t1 = 1.0
-
-        def clip(p, q):
-            nonlocal t0, t1
-            if abs(p) < 1e-9:
-                return q >= 0
-            t = q / p
-            if p < 0:
-                if t > t1: return False
-                if t > t0: t0 = t
-            else:
-                if t < t0: return False
-                if t < t1: t1 = t
-            return True
-
-        if not clip(-dx, x0 - left):   return False
-        if not clip(dx, right - x0):  return False
-        if not clip(-dy, y0 - top):    return False
-        if not clip(dy, bottom - y0): return False
-
-        return t0 <= t1
+        a = self.pos + Vector((-self.width/2, 0))
+        b = self.pos + Vector((-self.width/2, -self.height))
+        c = self.pos + Vector((self.width / 2, -self.height))
+        d = self.pos + Vector((self.width / 2, 0))
+        sides = [
+            Line(a, b), Line(b, c), Line(c, d), Line(d, a)
+        ]
+        for l in sides:
+            if l.is_colliding(line):
+                return True
+        return False
 
     def check_ground(self, line):
-        if line.a.y <= self.pos.y or line.b.y <= self.pos.y:
+        if line.vector.x == 0:
+            return
+        k = line.vector.y/line.vector.x
+        b = line.a.y - line.a.x*k
+        if self.pos.y < self.pos.x*k + b + 0.5:
             self.on_ground = True
             self.ground_line = line
             self.ground_normal = line.vector.perpendicular().normalized()
 
     def move(self, delta, map):
-        old_pos = self.pos
+        old_pos = Vector((self.pos.x, self.pos.y))
         self.pos += self.vel * delta
         f = False
         for obs in map:
@@ -232,44 +215,55 @@ class Player:
         vel_seg = self.vel.normalized()*0.5
         delta_left = delta
         f = False
+        filtered_lines = []
+        for obs in map:
+            for l in obs.lines:
+                if not self.vel.is_collinear(l.vector):
+                    filtered_lines.append(l)
         while delta_left>0:
             self.pos += vel_seg
-            for obs in map:
-                for l in obs.lines:
-                    if self.check_collision(l):
-                        self.check_ground(l)
-                        self.pos -= vel_seg
-                        self.vel = self.vel.projection(l.vector)
-                        if self.vel.length()<=0.2:
-                            return
-                        self.move(delta, map)
+            for l in filtered_lines:
+                if self.check_collision(l):
+                    self.check_ground(l)
+                    self.pos -= vel_seg
+                    self.vel = self.vel.projection(l.vector)
+                    if self.vel.length()<=0.2:
                         return
+                    self.move(delta_left, map)
+                    return
             delta_left -= delta_seg
         return
 
     def logic(self, inp, delta, map, grav):
+        self.on_ground = False
+        self.ground_line = None
+        self.ground_normal = None
+
+        self.move(delta, map)
+
         self.vel += grav * delta
         if self.on_ground:
             ground_vec = self.ground_line.vector.normalized()
-            if inp["a"] and self.vel.x > -self.speed:
-                self.vel -= ground_vec * self.speed * delta * 10
-            if inp["d"] and self.vel.x < self.speed:
-                self.vel += ground_vec * self.speed * delta * 10
+            if abs(ground_vec.angle_deg()) <= 60:
+                if inp["a"] and self.vel.x > -self.speed:
+                    self.vel -= ground_vec * self.speed * delta * 10
+                if inp["d"] and self.vel.x < self.speed:
+                    self.vel += ground_vec * self.speed * delta * 10
+                self.vel -= ground_vec * self.vel.dot(ground_vec) * 10 * delta
+            else:
+                if inp["a"] and self.vel.x > -self.speed:
+                    self.vel.x -= self.speed * delta * 4
+                if inp["d"] and self.vel.x < self.speed:
+                    self.vel.x += self.speed * delta * 4
             if inp["w"]:
                 self.vel -= self.ground_normal.normalized() * self.jump
-                self.on_ground = False
-                self.ground_line = None
-                self.ground_normal = None
-            self.vel -= ground_vec * self.vel.dot(ground_vec) * 10 * delta
         else:
-            if inp["a"] and self.vel.x > -self.speed/5:
-                self.vel.x -= self.speed * delta * 2
-            if inp["d"] and self.vel.x < self.speed/5:
-                self.vel.x += self.speed * delta * 2
+            if inp["a"] and self.vel.x > -self.speed / 2:
+                self.vel.x -= self.speed * delta * 5
+            if inp["d"] and self.vel.x < self.speed / 5:
+                self.vel.x += self.speed * delta * 5
             if inp["w"]:
-                self.vel.y -= self.jump*2*delta
-
-        self.move(delta, map)
+                self.vel.y -= self.jump * 2 * delta
 
     def __str__(self):
         return f"Character(pos={self.pos}, vel={self.vel}, on_ground={self.on_ground})"
