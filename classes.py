@@ -1,30 +1,5 @@
-import socket
-import json
 import math
 import pygame
-from settings import *
-
-class Server:
-    def __init__(self, _server):
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server_address = (_server, 5555)
-        self.player_id = None
-        self.game_state = {}
-
-    def connect(self):
-        self.socket.connect(self.server_address)
-
-    def receive_updates(self):
-        while True:
-            try:
-                data = self.socket.recv(1024).decode('utf-8')
-                if data:
-                    self.game_state = json.loads(data)
-            except:
-                break
-
-    def send_message(self, message):
-        self.socket.send(message.encode('utf-8'))
 
 class Vector:
     def __init__(self, _v):
@@ -95,6 +70,18 @@ class Vector:
     def is_collinear(self, other, eps=1e-6):
         return abs(self.cross(other)) <= eps
 
+    def convert_dict(self):
+        d = {
+            "x": self.x,
+            "y": self.y
+        }
+        return d
+
+    def from_dict(self, d):
+        self.x = d["x"]
+        self.y = d["y"]
+        return self
+
 class Line:
     def __init__(self, a, b):
         if a.x <= b.x:
@@ -138,6 +125,18 @@ class Line:
             return False
         return True
 
+    def convert_dict(self):
+        d = {
+            "a": self.a.convert_dict(),
+            "b": self.b.convert_dict()
+        }
+        return d
+
+    def from_dict(self, d):
+        self.a = Vector((0, 0)).from_dict(d["a"])
+        self.b = Vector((0, 0)).from_dict(d["b"])
+        return self
+
     def __str__(self):
         return f"Line(a={self.a}, b={self.b})"
 
@@ -157,13 +156,13 @@ class Obstacle:
         pygame.draw.polygon(screen, (100, 100, 100), self.tuple_dots())
 
 class Player:
-    def __init__(self):
+    def __init__(self, _x, _y):
         self.width = 10
         self.height = 25
         self.speed = 300
         self.jump = 500
         self.vel = Vector((0, 0))
-        self.pos = Vector((WIDTH/2, HEIGHT/2+self.height/2))
+        self.pos = Vector((_x, _y))
         self.surf = pygame.Surface((self.width+1, self.height+1))
         self.surf.fill((100, 255, 100))
         self.on_ground = False
@@ -264,6 +263,32 @@ class Player:
                 self.vel.x += self.speed * delta * 5
             if inp["w"]:
                 self.vel.y -= self.jump * 2 * delta
+
+    def convert_dict(self):
+        d = {
+            "width": self.width,
+            "height": self.height,
+            "speed": self.speed,
+            "jump": self.jump,
+            "vel": self.vel.convert_dict(),
+            "pos": self.pos.convert_dict(),
+            "on_ground": self.on_ground,
+            "ground_normal": self.ground_normal.convert_dict(),
+            "ground_line": self.ground_line.convert_dict()
+        }
+        return d
+
+    def from_dict(self, d):
+        self.width = int(d["width"])
+        self.height = int(d["height"])
+        self.speed = int(d["speed"])
+        self.jump = int(d["jump"])
+        self.vel = Vector((0, 0)).from_dict(d["vel"])
+        self.pos = int(d["pos"])
+        self.on_ground = int(d["on_ground"])
+        self.ground_normal = Vector((0, 0)).from_dict(d["ground_normal"])
+        self.ground_line = Line(Vector((0, 0)), Vector((0, 0))).from_dict(d["ground_line"])
+        return self
 
     def __str__(self):
         return f"Character(pos={self.pos}, vel={self.vel}, on_ground={self.on_ground})"
