@@ -78,6 +78,8 @@ class Vector:
         return d
 
     def from_dict(self, d):
+        if d is None:
+            return None
         self.x = d["x"]
         self.y = d["y"]
         return self
@@ -133,6 +135,8 @@ class Line:
         return d
 
     def from_dict(self, d):
+        if d is None:
+            return None
         self.a = Vector((0, 0)).from_dict(d["a"])
         self.b = Vector((0, 0)).from_dict(d["b"])
         return self
@@ -265,6 +269,14 @@ class Player:
                 self.vel.y -= self.jump * 2 * delta
 
     def convert_dict(self):
+        if self.ground_normal is None:
+            gn = None
+        else:
+            gn = self.ground_normal.convert_dict()
+        if self.ground_line is None:
+            gl = None
+        else:
+            gl = self.ground_line.convert_dict()
         d = {
             "width": self.width,
             "height": self.height,
@@ -273,8 +285,8 @@ class Player:
             "vel": self.vel.convert_dict(),
             "pos": self.pos.convert_dict(),
             "on_ground": self.on_ground,
-            "ground_normal": self.ground_normal.convert_dict(),
-            "ground_line": self.ground_line.convert_dict()
+            "ground_normal": gn,
+            "ground_line": gl
         }
         return d
 
@@ -284,8 +296,8 @@ class Player:
         self.speed = int(d["speed"])
         self.jump = int(d["jump"])
         self.vel = Vector((0, 0)).from_dict(d["vel"])
-        self.pos = int(d["pos"])
-        self.on_ground = int(d["on_ground"])
+        self.pos = Vector((0, 0)).from_dict(d["pos"])
+        self.on_ground = bool(d["on_ground"])
         self.ground_normal = Vector((0, 0)).from_dict(d["ground_normal"])
         self.ground_line = Line(Vector((0, 0)), Vector((0, 0))).from_dict(d["ground_line"])
         return self

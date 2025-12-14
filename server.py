@@ -12,8 +12,6 @@ from settings import MESSAGE_DELTA
 #получать от игроков сообщения с input
 #отправлять 20 раз в секунду местоположение всех объектов
 
-player1 = Player(250, 350)
-player2 = Player(350, 350)
 pl1_inp = {"a":False, "d":False, "w":False}
 pl2_inp = {"a":False, "d":False, "w":False}
 
@@ -39,6 +37,9 @@ conn2.send(b"2")
 
 conn1.send(b"game_start")
 conn2.send(b"game_start")
+
+player1 = Player(250, 350)
+player2 = Player(350, 350)
 
 th1 = threading.Thread(
     target=client_handler, args=(player1, player2, 1, conn1, addr1)
