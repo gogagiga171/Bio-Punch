@@ -18,14 +18,24 @@ pl2_inp = {"a":False, "d":False, "w":False}
 
 def server_handler(s, N):
     global player1, player2, pl1_inp, pl2_inp
+    buffer = ""
     while True:
-        data = json.loads(s.recv(1024).decode("utf-8"))
-        player1 = Player(0, 0).from_dict(data["player1"])
-        player2 = Player(0, 0).from_dict(data["player2"])
-        if N == 1:
-            pl2_inp = data["pl2_inp"]
-        if N == 2:
-            pl1_inp = data["pl1_inp"]
+        chunk = s.recv(1024).decode("utf-8")
+        buffer += chunk
+        while "\n" in buffer:
+            data, buffer = buffer.split("\n", 1)
+            if data.strip():
+                try:
+                    data = json.loads(data)
+                except json.JSONDecodeError:
+                    print("упс проблема с json")
+                    continue
+                player1 = Player(0, 0).from_dict(data["player1"])
+                player2 = Player(0, 0).from_dict(data["player2"])
+                if N == 1:
+                    pl2_inp = data["pl2_inp"]
+                if N == 2:
+                    pl1_inp = data["pl1_inp"]
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((SERVER, 8000))
@@ -47,8 +57,8 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 fps = 60
 running = True
-player1 = Player(250, 350)
-player2 = Player(350, 350)
+player1 = Player(350, 350)
+player2 = Player(450, 350)
 while running:
     delta = clock.tick(fps)/1000
     screen.fill((255, 255, 255))

@@ -38,8 +38,8 @@ conn2.send(b"2")
 conn1.send(b"game_start")
 conn2.send(b"game_start")
 
-player1 = Player(250, 350)
-player2 = Player(350, 350)
+player1 = Player(350, 350)
+player2 = Player(450, 350)
 
 th1 = threading.Thread(
     target=client_handler, args=(player1, player2, 1, conn1, addr1)
@@ -68,6 +68,6 @@ while True:
             "pl2_inp": pl2_inp
         }
         data_bytes = json.dumps(data).encode("utf-8")
-        conn1.send(data_bytes)
-        conn2.send(data_bytes)
+        conn1.send(data_bytes+b"\n")
+        conn2.send(data_bytes+b"\n")
         start = time.time()
