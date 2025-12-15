@@ -1,5 +1,6 @@
 import math
 import pygame
+from settings import HEIGHT, WIDTH
 
 class Vector:
     def __init__(self, _v):
@@ -248,6 +249,10 @@ class Player:
                 self.move(delta/n, map)
         else:
             self.move(delta, map)
+
+        if self.pos.y > HEIGHT + self.height + 100:
+            self.pos.x = WIDTH/2
+            self.pos.y = -100
 
         self.vel += grav * delta
         if self.on_ground:
