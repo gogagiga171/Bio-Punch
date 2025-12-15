@@ -242,7 +242,12 @@ class Player:
         self.ground_line = None
         self.ground_normal = None
 
-        self.move(delta, map)
+        if (self.vel*delta).length() > min(self.width, self.height):
+            n = int((self.vel*delta).length()//min(self.width, self.height)+1)
+            for i in range(n):
+                self.move(delta/n, map)
+        else:
+            self.move(delta, map)
 
         self.vel += grav * delta
         if self.on_ground:
