@@ -1,4 +1,6 @@
 import math
+import time
+
 import pygame
 from settings import HEIGHT, WIDTH
 
@@ -85,6 +87,9 @@ class Vector:
         self.y = d["y"]
         return self
 
+    def copy(self):
+        return Vector((self.x, self.y))
+
 class Line:
     def __init__(self, a, b):
         if a.x <= b.x:
@@ -161,7 +166,7 @@ class Obstacle:
         pygame.draw.polygon(screen, (100, 100, 100), self.tuple_dots())
 
 class Player:
-    def __init__(self, _x, _y):
+    def __init__(self, _x, _y, _orientation):
         self.width = 10
         self.height = 25
         self.speed = 300
@@ -173,6 +178,9 @@ class Player:
         self.on_ground = False
         self.ground_normal = Vector((0, 1))
         self.ground_line = None
+        self.orientation = _orientation
+        self.punch = Punch()
+        self.last_hit = time.time()
 
     def draw(self, screen: pygame.surface.Surface):
         screen.blit(self.surf, (self.pos.x-self.width/2, self.pos.y - self.height))
@@ -238,7 +246,7 @@ class Player:
             delta_left -= delta_seg
         return
 
-    def logic(self, inp, delta, map, grav):
+    def logic(self, inp, delta, map, enemy, grav):
         self.on_ground = False
         self.ground_line = None
         self.ground_normal = None
@@ -259,24 +267,33 @@ class Player:
             ground_vec = self.ground_line.vector.normalized()
             if abs(ground_vec.angle_deg()) <= 60:
                 if inp["a"] and self.vel.x > -self.speed:
+                    self.orientation = "l"
                     self.vel -= ground_vec * self.speed * delta * 10
                 if inp["d"] and self.vel.x < self.speed:
+                    self.orientation = "r"
                     self.vel += ground_vec * self.speed * delta * 10
                 self.vel -= ground_vec * self.vel.dot(ground_vec) * 10 * delta
             else:
                 if inp["a"] and self.vel.x > -self.speed:
+                    self.orientation = "l"
                     self.vel.x -= self.speed * delta * 4
                 if inp["d"] and self.vel.x < self.speed:
+                    self.orientation = "r"
                     self.vel.x += self.speed * delta * 4
             if inp["w"]:
                 self.vel -= self.ground_normal.normalized() * self.jump
         else:
             if inp["a"] and self.vel.x > -self.speed / 2:
+                self.orientation = "l"
                 self.vel.x -= self.speed * delta * 5
             if inp["d"] and self.vel.x < self.speed / 5:
+                self.orientation = "r"
                 self.vel.x += self.speed * delta * 5
             if inp["w"]:
                 self.vel.y -= self.jump * 2 * delta
+
+        if inp["o"]:
+            self.punch.hit(self, enemy)
 
     def convert_dict(self):
         if self.ground_normal is None:
@@ -314,3 +331,42 @@ class Player:
 
     def __str__(self):
         return f"Character(pos={self.pos}, vel={self.vel}, on_ground={self.on_ground})"
+
+class Punch:
+    def __init__(self):
+        self.width = 20
+        self.height = 20
+        self.damage = 5
+        self.knock_back = Vector((100, -100))
+        self.reload = 0.2
+
+    def rel_pos(self, p_width, p_height, p_orientation, p_pos):
+        if p_orientation == "l":
+            return Vector((p_pos.x-p_width/2-self.width, p_pos.y - p_height))
+        if p_orientation == "r":
+            return Vector((p_pos.x+p_width/2, p_pos.y - p_height))
+
+    def check_col(self, player, enemy):
+        r_pos = self.rel_pos(player.width, player.height, player.orientation, player.pos)
+        e_pos = Vector((enemy.pos.x - enemy.width/2, enemy.pos.y - enemy.height))
+        if (r_pos.x+self.width < e_pos.x or e_pos.x+enemy.width < r_pos.x) or (r_pos.y+self.height < e_pos.y or e_pos.y+enemy.height < r_pos.y):
+            return False
+        return True
+
+    def check_reload(self, player):
+        return time.time()-player.last_hit > self.reload
+
+    def hit(self, player, enemy):
+        if self.check_col(player, enemy) and self.check_reload(player):
+            if player.orientation == "r":
+                enemy.vel += self.knock_back
+            else:
+                enemy.vel.y += self.knock_back.y
+                enemy.vel.x -= self.knock_back.x
+            player.last_hit = time.time()
+            return True
+        return False
+
+    def draw_hitbox(self, player, screen):
+        r_pos = self.rel_pos(player.width, player.height, player.orientation, player.pos)
+        pygame.draw.rect(screen, (255, 0, 0), pygame.rect.Rect(r_pos.x, r_pos.y, self.width, self.height))
