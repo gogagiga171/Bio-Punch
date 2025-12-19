@@ -44,11 +44,11 @@ def client_handler(p1, p2, cl, conn, addr):
         data = json.loads(data.decode("utf-8"))
         if data["name"] == "inp":
             if cl == 1:
-                pl1_inp = data["imp"]
+                pl1_inp = data["inp"]
                 if data["punch"]:
                     player1.punch.hit(player1, player2, -player1.vel*pl1_ping)
             if cl == 2:
-                pl2_inp = data["imp"]
+                pl2_inp = data["inp"]
                 if data["punch"]:
                     player2.punch.hit(player2, player1, -player2.vel*pl2_ping)
         if data["name"] == "ping":

@@ -41,7 +41,7 @@ def server_handler(s, N):
                         pl1_inp = data["pl1_inp"]
                         pl1_inp["o"] = False
                 elif data["name"] == "ping":
-                    conn.send(json.dumps({"name":"ping"}).encode("utf-8"))
+                    s.send(json.dumps({"name":"ping"}).encode("utf-8"))
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((SERVER, 8000))
