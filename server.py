@@ -23,7 +23,7 @@ pl2_ping_timer_start = 0
 
 def ping_sender(conn, pl):
     global pl1_ping_fetched, pl2_ping_fetched, pl1_ping_timer_start, pl2_ping_timer_start
-    conn.send(json.dumps({"name":"ping"}).encode("utf-8"))
+    conn.send(json.dumps({"name":"ping"}).encode("utf-8")+b"\n")
     if pl == 1:
         pl1_ping_timer_start = time.time()
         pl1_ping_fetched = False
@@ -40,24 +40,35 @@ def client_handler(p1, p2, cl, conn, addr):
     global pl1_ping, pl2_ping, pl1_ping_fetched, pl2_ping_fetched
     global pl1_ping_timer_start, pl2_ping_timer_start
     while True:
-        data = conn.recv(1024)
-        data = json.loads(data.decode("utf-8"))
-        if data["name"] == "inp":
-            if cl == 1:
-                pl1_inp = data["inp"]
-                if data["punch"]:
-                    player1.punch.hit(player1, player2, -player1.vel*pl1_ping)
-            if cl == 2:
-                pl2_inp = data["inp"]
-                if data["punch"]:
-                    player2.punch.hit(player2, player1, -player2.vel*pl2_ping)
-        if data["name"] == "ping":
-            if cl == 1:
-                pl1_ping = time.time()-pl1_ping_timer_start
-                pl1_ping_fetched = True
-            if cl == 2:
-                pl2_ping = time.time()-pl2_ping_timer_start
-                pl2_ping_fetched = True
+        buffer = ""
+        while True:
+            chunk = conn.recv(1024).decode("utf-8")
+            buffer += chunk
+            while "\n" in buffer:
+                data, buffer = buffer.split("\n", 1)
+                if data.strip():
+                    try:
+                        data = json.loads(data)
+                    except json.JSONDecodeError:
+                        print("упс проблема с json")
+                        continue
+
+                    if data["name"] == "inp":
+                        if cl == 1:
+                            pl1_inp = data["inp"]
+                            if data["punch"]:
+                                player1.punch.hit(player1, player2, -player1.vel*pl1_ping)
+                        if cl == 2:
+                            pl2_inp = data["inp"]
+                            if data["punch"]:
+                                player2.punch.hit(player2, player1, -player2.vel*pl2_ping)
+                    if data["name"] == "ping":
+                        if cl == 1:
+                            pl1_ping = time.time()-pl1_ping_timer_start
+                            pl1_ping_fetched = True
+                        if cl == 2:
+                            pl2_ping = time.time()-pl2_ping_timer_start
+                            pl2_ping_fetched = True
 
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

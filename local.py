@@ -43,7 +43,7 @@ def server_handler(s, N):
                         pl1_inp = data["pl1_inp"]
                         pl1_inp["o"] = False
                 elif data["name"] == "ping":
-                    s.send(json.dumps({"name":"ping"}).encode("utf-8"))
+                    s.send(json.dumps({"name":"ping"}).encode("utf-8")+b"\n")
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((SERVER, 8000))
@@ -95,7 +95,7 @@ while running:
                 "inp": pl1_inp,
                 "punch": punch
             }
-            s.send(json.dumps(data).encode("utf-8"))
+            s.send(json.dumps(data).encode("utf-8")+b"\n")
     else:
         punch = player1.logic(pl1_inp, delta, map, player2, Vector((0, 2000)))
         player2.logic(keys, delta, map, player1, Vector((0, 2000)))
@@ -106,7 +106,7 @@ while running:
                 "inp": pl2_inp,
                 "punch": punch
             }
-            s.send(json.dumps(data).encode("utf-8"))
+            s.send(json.dumps(data).encode("utf-8")+b"\n")
 
     player1.draw(screen)
     player2.draw(screen)
