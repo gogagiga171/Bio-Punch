@@ -28,15 +28,17 @@ def server_handler(s, N):
         while "\n" in buffer:
             data, buffer = buffer.split("\n", 1)
             if data.strip():
+                if data == "game_start":
+                    game_start = True
+                    continue
+
                 try:
                     data = json.loads(data)
                 except json.JSONDecodeError:
                     print("упс проблема с json")
                     continue
 
-                if data == "game_start":
-                    game_start = True
-                elif data["name"] == "info":
+                if data["name"] == "info":
                     player1.update_from_dict(data["player1"])
                     player2.update_from_dict(data["player2"])
                     if N == 1:
