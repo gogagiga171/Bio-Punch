@@ -15,6 +15,8 @@ import socket
 
 pl1_inp = {"a":False, "d":False, "w":False, "o":False}
 pl2_inp = {"a":False, "d":False, "w":False, "o":False}
+player1 = Player(350, 350, "r")
+player2 = Player(450, 350, "l")
 
 def server_handler(s, N):
     global player1, player2, pl1_inp, pl2_inp
@@ -52,6 +54,7 @@ if N == 1:
 gs = s.recv(1024).decode("utf-8")
 while gs != "game_start":
     gs = s.recv(1024).decode("utf-8")
+print("start")
 
 th = threading.Thread(
     target=server_handler, args=(s, N)
@@ -63,8 +66,6 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 fps = 60
 running = True
-player1 = Player(350, 350, "r")
-player2 = Player(450, 350, "l")
 while running:
     delta = clock.tick(fps)/1000
     screen.fill((255, 255, 255))
