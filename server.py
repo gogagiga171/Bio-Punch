@@ -101,8 +101,8 @@ start = time.time()
 while True:
     delta = clock.tick(fps) / 1000
 
-    player1.logic(pl1_inp, delta, map, Vector((0, 2000)), player2)
-    player2.logic(pl2_inp, delta, map, Vector((0, 2000)), player1)
+    player1.logic(pl1_inp, delta, map, player2, Vector((0, 2000)))
+    player2.logic(pl2_inp, delta, map, player1, Vector((0, 2000)))
 
     if time.time()-start>MESSAGE_DELTA:
         data = {

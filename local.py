@@ -85,8 +85,8 @@ while running:
                 keys["o"] = True
 
     if N==1:
-        punch = player1.logic(keys, delta, map, Vector((0, 2000)), player2)
-        player2.logic(pl2_inp, delta, map, Vector((0, 2000)), player1)
+        punch = player1.logic(keys, delta, map, player1, Vector((0, 2000)))
+        player2.logic(pl2_inp, delta, map, player2, Vector((0, 2000)))
         if keys != pl1_inp:
             pl1_inp = keys
             data = {
@@ -96,8 +96,8 @@ while running:
             }
             s.send(json.dumps(data).encode("utf-8"))
     else:
-        punch = player1.logic(pl1_inp, delta, map, Vector((0, 2000)), player2)
-        player2.logic(keys, delta, map, Vector((0, 2000)), player1)
+        punch = player1.logic(pl1_inp, delta, map, player2, Vector((0, 2000)))
+        player2.logic(keys, delta, map, player1, Vector((0, 2000)))
         if keys != pl2_inp:
             pl2_inp = keys
             data = {
