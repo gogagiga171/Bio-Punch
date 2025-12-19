@@ -81,8 +81,8 @@ conn1.send(b"1")
 conn2, addr2 = s.accept()
 conn2.send(b"2")
 
-conn1.send(b"game_start")
-conn2.send(b"game_start")
+conn1.send(b"game_start\n")
+conn2.send(b"game_start\n")
 
 player1 = Player(350, 350, "r")
 player2 = Player(450, 350, "l")

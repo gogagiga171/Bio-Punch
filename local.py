@@ -17,9 +17,10 @@ pl1_inp = {"a":False, "d":False, "w":False, "o":False}
 pl2_inp = {"a":False, "d":False, "w":False, "o":False}
 player1 = Player(350, 350, "r")
 player2 = Player(450, 350, "l")
+game_start = False
 
 def server_handler(s, N):
-    global player1, player2, pl1_inp, pl2_inp
+    global player1, player2, pl1_inp, pl2_inp, game_start
     buffer = ""
     while True:
         chunk = s.recv(1024).decode("utf-8")
@@ -33,7 +34,9 @@ def server_handler(s, N):
                     print("упс проблема с json")
                     continue
 
-                if data["name"] == "info":
+                if data == "game_start":
+                    game_start = True
+                elif data["name"] == "info":
                     player1.update_from_dict(data["player1"])
                     player2.update_from_dict(data["player2"])
                     if N == 1:
@@ -51,15 +54,15 @@ N = int(s.recv(1024).decode("utf-8"))
 print("подключился к серверу, я игрок", N)
 if N == 1:
     print("жду игрока 2")
-gs = s.recv(1024).decode("utf-8")
-while gs != "game_start":
-    gs = s.recv(1024).decode("utf-8")
-print("start")
 
 th = threading.Thread(
     target=server_handler, args=(s, N)
 )
 th.start()
+
+while not game_start:
+    pass
+print("start")
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
