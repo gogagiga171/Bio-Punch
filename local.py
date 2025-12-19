@@ -32,8 +32,8 @@ def server_handler(s, N):
                     continue
 
                 if data["name"] == "info":
-                    player1 = player1.update_from_dict(data["player1"])
-                    player2 = player2.update_from_dict(data["player2"])
+                    player1.update_from_dict(data["player1"])
+                    player2.update_from_dict(data["player2"])
                     if N == 1:
                         pl2_inp = data["pl2_inp"]
                         pl2_inp["o"] = False
