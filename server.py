@@ -12,17 +12,52 @@ from settings import MESSAGE_DELTA
 #получать от игроков сообщения с input
 #отправлять 20 раз в секунду местоположение всех объектов
 
-pl1_inp = {"a":False, "d":False, "w":False}
-pl2_inp = {"a":False, "d":False, "w":False}
+pl1_inp = {"a":False, "d":False, "w":False, "o":False}
+pl2_inp = {"a":False, "d":False, "w":False, "o":False}
+pl1_ping = 0
+pl2_ping = 0
+pl1_ping_fetched = False
+pl2_ping_fetched = False
+pl1_ping_timer_start = 0
+pl2_ping_timer_start = 0
+
+def ping_sender(conn, pl):
+    global pl1_ping_fetched, pl2_ping_fetched, pl1_ping_timer_start, pl2_ping_timer_start
+    conn.send(json.dumps({"name":"ping"}).encode("utf-8"))
+    if pl == 1:
+        pl1_ping_timer_start = time.time()
+        pl1_ping_fetched = False
+        while not pl1_ping_fetched:
+            time.sleep(1)
+    if pl == 2:
+        pl2_ping_timer_start = time.time()
+        pl2_ping_fetched = False
+        while not pl2_ping_fetched:
+            time.sleep(2)
 
 def client_handler(p1, p2, cl, conn, addr):
-    global pl1_inp, pl2_inp
+    global pl1_inp, pl2_inp, player1, player2
+    global pl1_ping, pl2_ping, pl1_ping_fetched, pl2_ping_fetched
+    global pl1_ping_timer_start, pl2_ping_timer_start
     while True:
         data = conn.recv(1024)
-        if cl == 1:
-            pl1_inp = json.loads(data.decode("utf-8"))
-        if cl == 2:
-            pl2_inp = json.loads(data.decode("utf-8"))
+        data = json.loads(data.decode("utf-8"))
+        if data["name"] == "inp":
+            if cl == 1:
+                pl1_inp = data["imp"]
+                if data["punch"]:
+                    player1.punch.hit(player1, player2, -player1.vel*pl1_ping)
+            if cl == 2:
+                pl2_inp = data["imp"]
+                if data["punch"]:
+                    player2.punch.hit(player2, player1, -player2.vel*pl2_ping)
+        if data["name"] == "ping":
+            if cl == 1:
+                pl1_ping = time.time()-pl1_ping_timer_start
+                pl1_ping_fetched = True
+            if cl == 2:
+                pl2_ping = time.time()-pl2_ping_timer_start
+                pl2_ping_fetched = True
 
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -38,14 +73,23 @@ conn2.send(b"2")
 conn1.send(b"game_start")
 conn2.send(b"game_start")
 
-player1 = Player(350, 350)
-player2 = Player(450, 350)
+player1 = Player(350, 350, "r")
+player2 = Player(450, 350, "l")
 
 th1 = threading.Thread(
     target=client_handler, args=(player1, player2, 1, conn1, addr1)
 )
 th2 = threading.Thread(
     target=client_handler, args=(player1, player2, 2, conn2, addr2)
+)
+th1.start()
+th2.start()
+
+th1 = threading.Thread(
+    target=ping_sender, args=(conn1, 1)
+)
+th2 = threading.Thread(
+    target=ping_sender, args=(conn2, 2)
 )
 th1.start()
 th2.start()
@@ -57,13 +101,14 @@ start = time.time()
 while True:
     delta = clock.tick(fps) / 1000
 
-    player1.logic(pl1_inp, delta, map, Vector((0, 2000)))
-    player2.logic(pl2_inp, delta, map, Vector((0, 2000)))
+    player1.logic(pl1_inp, delta, map, Vector((0, 2000)), player2)
+    player2.logic(pl2_inp, delta, map, Vector((0, 2000)), player1)
 
     if time.time()-start>MESSAGE_DELTA:
         data = {
-            "player1": player1.convert_dict(),
-            "player2": player2.convert_dict(),
+            "name": "info",
+            "player1": player1.convert_quick_dict(),
+            "player2": player2.convert_quick_dict(),
             "pl1_inp": pl1_inp,
             "pl2_inp": pl2_inp
         }

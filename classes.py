@@ -292,10 +292,20 @@ class Player:
             if inp["w"]:
                 self.vel.y -= self.jump * 2 * delta
 
+        punch = False
         if inp["o"]:
-            self.punch.hit(self, enemy)
+            punch = self.punch.hit(self, enemy)
+        return punch
 
-    def convert_dict(self):
+    def convert_quick_dict(self):
+        d = {
+            "pos": self.pos.convert_dict(),
+            "vel": self.vel.convert_dict(),
+            "orientation": self.orientation
+        }
+        return d
+
+    def convert_full_dict(self):
         if self.ground_normal is None:
             gn = None
         else:
@@ -313,21 +323,35 @@ class Player:
             "pos": self.pos.convert_dict(),
             "on_ground": self.on_ground,
             "ground_normal": gn,
-            "ground_line": gl
+            "ground_line": gl,
+            "orientation": self.orientation,
+            "punch": self.punch.convert_dict()
         }
         return d
 
-    def from_dict(self, d):
-        self.width = int(d["width"])
-        self.height = int(d["height"])
-        self.speed = int(d["speed"])
-        self.jump = int(d["jump"])
-        self.vel = Vector((0, 0)).from_dict(d["vel"])
-        self.pos = Vector((0, 0)).from_dict(d["pos"])
-        self.on_ground = bool(d["on_ground"])
-        self.ground_normal = Vector((0, 0)).from_dict(d["ground_normal"])
-        self.ground_line = Line(Vector((0, 0)), Vector((0, 0))).from_dict(d["ground_line"])
-        return self
+    def update_from_dict(self, d):
+        if "width" in d.keys():
+            self.width = int(d["width"])
+        if "height" in d.keys():
+            self.height = int(d["height"])
+        if "speed" in d.keys():
+            self.speed = int(d["speed"])
+        if "jump" in d.keys():
+            self.jump = int(d["jump"])
+        if "vel" in d.keys():
+            self.vel = Vector((0, 0)).from_dict(d["vel"])
+        if "pos" in d.keys():
+            self.pos = Vector((0, 0)).from_dict(d["pos"])
+        if "on_ground" in d.keys():
+            self.on_ground = bool(d["on_ground"])
+        if "ground_normal" in d.keys():
+            self.ground_normal = Vector((0, 0)).from_dict(d["ground_normal"])
+        if "ground_line" in d.keys():
+            self.ground_line = Line(Vector((0, 0)), Vector((0, 0))).from_dict(d["ground_line"])
+        if "orientation" in d.keys():
+            self.orientation = d["orientation"]
+        if "punch" in d.keys():
+            self.punch = Punch().from_dict(d["punch"])
 
     def __str__(self):
         return f"Character(pos={self.pos}, vel={self.vel}, on_ground={self.on_ground})"
@@ -346,8 +370,9 @@ class Punch:
         if p_orientation == "r":
             return Vector((p_pos.x+p_width/2, p_pos.y - p_height))
 
-    def check_col(self, player, enemy):
-        r_pos = self.rel_pos(player.width, player.height, player.orientation, player.pos)
+    def check_col(self, player, enemy, offset=Vector((0, 0))):
+        p_pos = player.pos + offset
+        r_pos = self.rel_pos(player.width, player.height, player.orientation, p_pos)
         e_pos = Vector((enemy.pos.x - enemy.width/2, enemy.pos.y - enemy.height))
         if (r_pos.x+self.width < e_pos.x or e_pos.x+enemy.width < r_pos.x) or (r_pos.y+self.height < e_pos.y or e_pos.y+enemy.height < r_pos.y):
             return False
@@ -356,8 +381,20 @@ class Punch:
     def check_reload(self, player):
         return time.time()-player.last_hit > self.reload
 
-    def hit(self, player, enemy):
-        if self.check_col(player, enemy) and self.check_reload(player):
+    def hit(self, player, enemy, offset=Vector((0, 0))):
+        if self.check_col(player, enemy, offset) and self.check_reload(player):
+            if player.orientation == "r":
+                enemy.vel += self.knock_back
+            else:
+                enemy.vel.y += self.knock_back.y
+                enemy.vel.x -= self.knock_back.x
+            player.last_hit = time.time()
+            return True
+        return False
+
+    def server_hit(self, player, enemy, ping):
+        offset = -player.vel * ping
+        if self.check_col(player, enemy, offset) and self.check_reload(player):
             if player.orientation == "r":
                 enemy.vel += self.knock_back
             else:
@@ -370,3 +407,18 @@ class Punch:
     def draw_hitbox(self, player, screen):
         r_pos = self.rel_pos(player.width, player.height, player.orientation, player.pos)
         pygame.draw.rect(screen, (255, 0, 0), pygame.rect.Rect(r_pos.x, r_pos.y, self.width, self.height))
+
+    def from_dict(self, d):
+        self.height = d["height"]
+        self.width = d["width"]
+        self.reload = d["reload"]
+        self.knock_back = Vector((0, 0)).from_dict(d["knock_back"])
+
+    def convert_dict(self):
+        d = {
+            "height": self.height,
+            "width": self.width,
+            "reload": self.reload,
+            "knock_back": self.knock_back
+        }
+        return d
