@@ -167,6 +167,7 @@ class Obstacle:
 
 class Player:
     def __init__(self, _x, _y, _orientation):
+        self.health = 100
         self.width = 10
         self.height = 25
         self.speed = 300
@@ -184,6 +185,8 @@ class Player:
 
     def draw(self, screen: pygame.surface.Surface):
         screen.blit(self.surf, (self.pos.x-self.width/2, self.pos.y - self.height))
+        pygame.draw.rect(screen, (0, 255, 0), pygame.Rect(self.pos.x-10, self.pos.y-self.height-10, self.health/5, 5))
+        pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(self.pos.x-10+self.health/5, self.pos.y-self.height-10, (100-self.health)/5, 5))
 
     def check_collision(self, line):
         a = self.pos + Vector((-self.width/2, 0))
@@ -315,6 +318,7 @@ class Player:
         else:
             gl = self.ground_line.convert_dict()
         d = {
+            "health": self.health,
             "width": self.width,
             "height": self.height,
             "speed": self.speed,
@@ -330,6 +334,8 @@ class Player:
         return d
 
     def update_from_dict(self, d):
+        if "health" in d.keys():
+            self.health = int(d["health"])
         if "width" in d.keys():
             self.width = int(d["width"])
         if "height" in d.keys():
@@ -388,7 +394,8 @@ class Punch:
             else:
                 enemy.vel.y += self.knock_back.y
                 enemy.vel.x -= self.knock_back.x
-            player.last_hit = time.time()
+            enemy.health -= self.damage
+            player.last_hit = time.time()+0.5
             return True
         return False
 
