@@ -1,5 +1,5 @@
 import pygame
-from settings import SERVER
+from settings import SERVER, SERVER_NOTE
 import json
 import threading
 from classes import *
@@ -7,11 +7,6 @@ from settings import WIDTH, HEIGHT
 from map import map
 import socket
 
-#подключаемся к серверу, получаем свою цифру
-#ждём сигнал "game_start"
-#делаем одельный поток чтобы с сервера хватать инфу
-#запускаем игровой цикл
-#отправляем нажатые клавиши при нажатии
 
 pl1_inp = {"a":False, "d":False, "w":False, "o":False}
 pl2_inp = {"a":False, "d":False, "w":False, "o":False}
@@ -51,7 +46,7 @@ def server_handler(s, N):
                     s.send(json.dumps({"name":"ping"}).encode("utf-8")+b"\n")
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect((SERVER, 8000))
+s.connect((SERVER_NOTE, 8000))
 N = int(s.recv(1024).decode("utf-8"))
 print("подключился к серверу, я игрок", N)
 if N == 1:

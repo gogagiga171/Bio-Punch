@@ -7,10 +7,7 @@ import threading
 from map import map
 from settings import MESSAGE_DELTA
 
-#ожидаем подключение двух игроков пока не подключаться у игроков экран (ожидание второго игрока)
-#отправить сообщения о начале игры и id игроков
-#получать от игроков сообщения с input
-#отправлять 20 раз в секунду местоположение всех объектов
+#todo нам нужно сделать так чтобы на клиенты отправлялась информция о персах при ударе
 
 pl1_inp = {"a":False, "d":False, "w":False, "o":False}
 pl2_inp = {"a":False, "d":False, "w":False, "o":False}
@@ -20,6 +17,22 @@ pl1_ping_fetched = False
 pl2_ping_fetched = False
 pl1_ping_timer_start = 0
 pl2_ping_timer_start = 0
+
+def send_info(conn1, conn2, player1, player2, pl1_inp, pl2_inp, health=False):
+    data = {
+        "name": "info",
+        "player1": player1.convert_quick_dict(),
+        "player2": player2.convert_quick_dict(),
+        "pl1_inp": pl1_inp,
+        "pl2_inp": pl2_inp
+    }
+
+    if health:
+        pass
+
+    data_bytes = json.dumps(data).encode("utf-8")
+    conn1.send(data_bytes + b"\n")
+    conn2.send(data_bytes + b"\n")
 
 def ping_sender(conn, pl):
     global pl1_ping_fetched, pl2_ping_fetched, pl1_ping_timer_start, pl2_ping_timer_start
@@ -35,7 +48,7 @@ def ping_sender(conn, pl):
         while not pl2_ping_fetched:
             time.sleep(2)
 
-def client_handler(p1, p2, cl, conn, addr):
+def client_handler(p1, p2, cl, conn, enemy_conn, addr):
     global pl1_inp, pl2_inp, player1, player2
     global pl1_ping, pl2_ping, pl1_ping_fetched, pl2_ping_fetched
     global pl1_ping_timer_start, pl2_ping_timer_start
@@ -57,11 +70,15 @@ def client_handler(p1, p2, cl, conn, addr):
                         if cl == 1:
                             pl1_inp = data["inp"]
                             if data["punch"]:
-                                player1.punch.hit(player1, player2, -player1.vel*pl1_ping)
+                                punched = player1.punch.hit(player1, player2, -player1.vel*pl1_ping)
+                                if punched:
+                                    send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
                         if cl == 2:
                             pl2_inp = data["inp"]
                             if data["punch"]:
-                                player2.punch.hit(player2, player1, -player2.vel*pl2_ping)
+                                punched = player2.punch.hit(player2, player1, -player2.vel*pl2_ping)
+                                if punched:
+                                    send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
                     if data["name"] == "ping":
                         if cl == 1:
                             pl1_ping = time.time()-pl1_ping_timer_start
@@ -88,10 +105,10 @@ player1 = Player(350, 350, "r")
 player2 = Player(450, 350, "l")
 
 th1 = threading.Thread(
-    target=client_handler, args=(player1, player2, 1, conn1, addr1)
+    target=client_handler, args=(player1, player2, 1, conn1, conn2, addr1)
 )
 th2 = threading.Thread(
-    target=client_handler, args=(player1, player2, 2, conn2, addr2)
+    target=client_handler, args=(player1, player2, 2, conn2, conn1, addr2)
 )
 th1.start()
 th2.start()
@@ -116,14 +133,5 @@ while True:
     player2.logic(pl2_inp, delta, map, player1, Vector((0, 2000)))
 
     if time.time()-start>MESSAGE_DELTA:
-        data = {
-            "name": "info",
-            "player1": player1.convert_quick_dict(),
-            "player2": player2.convert_quick_dict(),
-            "pl1_inp": pl1_inp,
-            "pl2_inp": pl2_inp
-        }
-        data_bytes = json.dumps(data).encode("utf-8")
-        conn1.send(data_bytes+b"\n")
-        conn2.send(data_bytes+b"\n")
+        send_info(conn1, conn2, player1, player2, pl1_inp, pl2_inp)
         start = time.time()
