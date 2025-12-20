@@ -99,8 +99,6 @@ while running:
     else:
         player1.logic(pl1_inp, delta, map, player2, Vector((0, 2000)))
         punch = player2.logic(keys, delta, map, player1, Vector((0, 2000)))
-        if punch:
-            print(punch)
         if keys != pl2_inp:
             pl2_inp = keys
             data = {

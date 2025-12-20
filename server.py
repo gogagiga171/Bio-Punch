@@ -71,15 +71,12 @@ def client_handler(p1, p2, cl, conn, enemy_conn, addr):
                             if data["punch"]:
                                 punched = player1.punch.hit(player1, player2, -player1.vel*pl1_ping)
                                 if punched:
-                                    print("punch sent 1")
                                     send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
                         if cl == 2:
                             pl2_inp = data["inp"]
                             if data["punch"]:
                                 punched = player2.punch.hit(player2, player1, -player2.vel*pl2_ping)
-                                print(punched)
                                 if punched:
-                                    print("punch sent 2")
                                     send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
                     if data["name"] == "ping":
                         if cl == 1:
