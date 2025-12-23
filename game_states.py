@@ -50,6 +50,7 @@ def game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N):
         punch = player1.logic(keys, delta, map, player2, Vector((0, 2000)))
         player2.logic(pl2_inp, delta, map, player1, Vector((0, 2000)))
         if keys != pl1_inp:
+            print(1)
             pl1_inp = keys
             data = {
                 "name": "inp",
@@ -74,4 +75,4 @@ def game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N):
     for obs in map:
         obs.draw(screen)
 
-    return running
+    return running, pl1_inp, pl2_inp

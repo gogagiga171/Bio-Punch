@@ -73,7 +73,7 @@ while running:
     if game_state=="menu":
         running = menu(start_button, running, connect, screen)
     elif game_state=="game":
-        running = game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N)
+        running, pl1_inp, pl2_inp = game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N)
     else:
         running = loading(game_state, HEIGHT, WIDTH, screen, running)
 
