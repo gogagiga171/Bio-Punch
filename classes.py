@@ -395,7 +395,8 @@ class Punch:
                 enemy.vel.y += self.knock_back.y
                 enemy.vel.x -= self.knock_back.x
             enemy.health -= self.damage
-            player.last_hit = time.time()+0.5
+            enemy.last_hit = time.time()+0.5
+            player.last_hit = time.time()
             return True
         return False
 

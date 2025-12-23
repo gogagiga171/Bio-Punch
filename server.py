@@ -136,3 +136,4 @@ while True:
 
     if player1.health <= 0 or player2.health <= 0:
         player1, player2, map = load_map()
+        send_info(conn1, conn2, player1, player2, pl1_inp, pl2_inp, health=True)
