@@ -266,34 +266,39 @@ class Player:
             self.pos.y = -100
 
         self.vel += grav * delta
-        if self.on_ground:
-            ground_vec = self.ground_line.vector.normalized()
-            if abs(ground_vec.angle_deg()) <= 60:
-                if inp["a"] and self.vel.x > -self.speed:
-                    self.orientation = "l"
-                    self.vel -= ground_vec * self.speed * delta * 10
-                if inp["d"] and self.vel.x < self.speed:
-                    self.orientation = "r"
-                    self.vel += ground_vec * self.speed * delta * 10
-                self.vel -= ground_vec * self.vel.dot(ground_vec) * 10 * delta
+        if time.time() - self.last_hit > 0.2: #todo изменить на чтото типо hit_recovery_time
+            if self.on_ground:
+                ground_vec = self.ground_line.vector.normalized()
+                if abs(ground_vec.angle_deg()) <= 60:
+                    if inp["a"] and self.vel.x > -self.speed:
+                        self.orientation = "l"
+                        self.vel -= ground_vec * self.speed * delta * 10
+                    if inp["d"] and self.vel.x < self.speed:
+                        self.orientation = "r"
+                        self.vel += ground_vec * self.speed * delta * 10
+                else:
+                    if inp["a"] and self.vel.x > -self.speed:
+                        self.orientation = "l"
+                        self.vel.x -= self.speed * delta * 4
+                    if inp["d"] and self.vel.x < self.speed:
+                        self.orientation = "r"
+                        self.vel.x += self.speed * delta * 4
+                if inp["w"]:
+                    self.vel -= self.ground_normal.normalized() * self.jump
             else:
-                if inp["a"] and self.vel.x > -self.speed:
+                if inp["a"]:
                     self.orientation = "l"
-                    self.vel.x -= self.speed * delta * 4
-                if inp["d"] and self.vel.x < self.speed:
+                    if self.vel.x > -self.speed / 2:
+                        self.vel.x -= self.speed * delta * 5
+                if inp["d"]:
                     self.orientation = "r"
-                    self.vel.x += self.speed * delta * 4
-            if inp["w"]:
-                self.vel -= self.ground_normal.normalized() * self.jump
-        else:
-            if inp["a"] and self.vel.x > -self.speed / 2:
-                self.orientation = "l"
-                self.vel.x -= self.speed * delta * 5
-            if inp["d"] and self.vel.x < self.speed / 5:
-                self.orientation = "r"
-                self.vel.x += self.speed * delta * 5
-            if inp["w"]:
-                self.vel.y -= self.jump * 2 * delta
+                    if self.vel.x < self.speed / 5:
+                        self.vel.x += self.speed * delta * 5
+                if inp["w"]:
+                    self.vel.y -= self.jump * 2 * delta
+
+        if self.on_ground and abs(self.ground_line.vector.normalized().angle_deg()) <= 60:
+            self.vel -= self.ground_line.vector.normalized() * self.vel.dot(self.ground_line.vector.normalized()) * 10 * delta
 
         punch = False
         if inp["o"]:
@@ -388,16 +393,21 @@ class Punch:
         return time.time()-player.last_hit > self.reload
 
     def hit(self, player, enemy, offset=Vector((0, 0))):
-        if self.check_col(player, enemy, offset) and self.check_reload(player):
-            if player.orientation == "r":
-                enemy.vel += self.knock_back
-            else:
-                enemy.vel.y += self.knock_back.y
-                enemy.vel.x -= self.knock_back.x
-            enemy.health -= self.damage
-            enemy.last_hit = time.time()+0.5
+        if player.vel.x > 100:
+            player.vel.x += -100
+        if player.vel.x < -100:
+            player.vel.x += 100
+        if self.check_reload(player):
             player.last_hit = time.time()
-            return True
+            if self.check_col(player, enemy, offset):
+                if player.orientation == "r":
+                    enemy.vel += self.knock_back
+                else:
+                    enemy.vel.y += self.knock_back.y
+                    enemy.vel.x -= self.knock_back.x
+                enemy.health -= self.damage
+                enemy.last_hit = time.time()+0.5
+                return True
         return False
 
     def server_hit(self, player, enemy, ping):

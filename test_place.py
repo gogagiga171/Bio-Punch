@@ -1,6 +1,6 @@
 import pygame
 from settings import WIDTH, HEIGHT
-from map import map
+from map import load_map
 from classes import Player, Vector
 
 pygame.init()
@@ -8,8 +8,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 fps = 60
 running = True
-player = Player(350, 350, "r")
-dummy = Player(450, 350, "l")
+player, dummy, map = load_map()
 while running:
     delta = clock.tick(fps)/1000
     screen.fill((255, 255, 255))
@@ -38,6 +37,9 @@ while running:
 
     player.logic(keys, delta, map, dummy, Vector((0, 2000)))
     dummy.logic(d_keys, delta, map, player, Vector((0, 2000)))
+
+    if dummy.health <= 0 or player.health <= 0:
+        player, dummy, map = load_map()
 
     player.draw(screen)
     player.punch.draw_hitbox(player, screen)
