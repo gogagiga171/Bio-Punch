@@ -22,7 +22,7 @@ def loading(game_state, HEIGHT, WIDTH, screen, running):
         if event.type == pygame.QUIT:
             running = False
 
-    font_size = max(20, WIDTH // 6)
+    font_size = max(20, WIDTH // 10)
     font = pygame.font.Font(None, font_size)
 
     text_surface = font.render(game_state, True, (0, 0, 0))

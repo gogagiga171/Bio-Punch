@@ -4,7 +4,7 @@ import socket
 import json
 import time
 import threading
-from map import map
+from map import load_map
 from settings import MESSAGE_DELTA
 
 pl1_inp = {"a":False, "d":False, "w":False, "o":False}
@@ -93,15 +93,14 @@ s.bind(("0.0.0.0", 8000))
 s.listen()
 
 conn1, addr1 = s.accept()
-conn1.send(b"1")
+conn1.send(b"1\n")
 conn2, addr2 = s.accept()
-conn2.send(b"2")
+conn2.send(b"2\n")
 
 conn1.send(b"game_start\n")
 conn2.send(b"game_start\n")
 
-player1 = Player(350, 350, "r")
-player2 = Player(450, 350, "l")
+player1, player2, map = load_map()
 
 th1 = threading.Thread(
     target=client_handler, args=(player1, player2, 1, conn1, conn2, addr1)
@@ -134,3 +133,6 @@ while True:
     if time.time()-start>MESSAGE_DELTA:
         send_info(conn1, conn2, player1, player2, pl1_inp, pl2_inp)
         start = time.time()
+
+    if player1.health <= 0 or player2.health <= 0:
+        player1, player2, map = load_map()

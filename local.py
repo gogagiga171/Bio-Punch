@@ -4,20 +4,19 @@ import json
 import threading
 from classes import Button, Player, Vector
 from settings import WIDTH, HEIGHT
-from map import map
+from map import load_map
 import socket
 from game_states import game, loading, menu
 
 pl1_inp = {"a":False, "d":False, "w":False, "o":False}
 pl2_inp = {"a":False, "d":False, "w":False, "o":False}
-player1 = Player(350, 350, "r")
-player2 = Player(450, 350, "l")
+player1, player2, map = load_map()
 game_state = "menu"
 s=0
 N=0
 
-def server_handler(s, N):
-    global player1, player2, pl1_inp, pl2_inp, game_state
+def server_handler(s):
+    global player1, player2, pl1_inp, pl2_inp, game_state, N
     buffer = ""
     while True:
         chunk = s.recv(1024).decode("utf-8")
@@ -27,6 +26,10 @@ def server_handler(s, N):
             if data.strip():
                 if data == "game_start":
                     game_state = "game"
+                    continue
+                elif data == "1" or data == "2":
+                    N=int(data)
+                    game_state = "waiting for player"
                     continue
 
                 try:
@@ -52,17 +55,10 @@ def connect():
     game_state = "waiting for server"
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((SERVER_NOTE, 8000))
-    N = int(s.recv(1024).decode("utf-8"))
-    print("подключился к серверу, я игрок", N)
-    if N == 1:
-        print("жду игрока 2")
-
     th = threading.Thread(
-        target=server_handler, args=(s, N)
+        target=server_handler, args=(s,)
     )
     th.start()
-
-    game_state = "waiting for player"
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
