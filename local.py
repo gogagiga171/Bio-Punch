@@ -2,20 +2,22 @@ import pygame
 from settings import SERVER, SERVER_NOTE
 import json
 import threading
-from classes import *
+from classes import Button, Player, Vector
 from settings import WIDTH, HEIGHT
 from map import map
 import socket
-
+from game_states import game, loading, menu
 
 pl1_inp = {"a":False, "d":False, "w":False, "o":False}
 pl2_inp = {"a":False, "d":False, "w":False, "o":False}
 player1 = Player(350, 350, "r")
 player2 = Player(450, 350, "l")
-game_start = False
+game_state = "menu"
+s=0
+N=0
 
 def server_handler(s, N):
-    global player1, player2, pl1_inp, pl2_inp, game_start
+    global player1, player2, pl1_inp, pl2_inp, game_state
     buffer = ""
     while True:
         chunk = s.recv(1024).decode("utf-8")
@@ -24,7 +26,7 @@ def server_handler(s, N):
             data, buffer = buffer.split("\n", 1)
             if data.strip():
                 if data == "game_start":
-                    game_start = True
+                    game_state = "game"
                     continue
 
                 try:
@@ -45,24 +47,26 @@ def server_handler(s, N):
                 elif data["name"] == "ping":
                     s.send(json.dumps({"name":"ping"}).encode("utf-8")+b"\n")
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect((SERVER_NOTE, 8000))
-N = int(s.recv(1024).decode("utf-8"))
-print("подключился к серверу, я игрок", N)
-if N == 1:
-    print("жду игрока 2")
+def connect():
+    global game_state, s, N
+    game_state = "waiting for server"
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((SERVER_NOTE, 8000))
+    N = int(s.recv(1024).decode("utf-8"))
+    print("подключился к серверу, я игрок", N)
+    if N == 1:
+        print("жду игрока 2")
 
-th = threading.Thread(
-    target=server_handler, args=(s, N)
-)
-th.start()
+    th = threading.Thread(
+        target=server_handler, args=(s, N)
+    )
+    th.start()
 
-while not game_start:
-    pass
-print("start")
+    game_state = "waiting for player"
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
+start_button = Button(Vector((200, 400)), 400, 100, "start game") #todo изменить магические числа
 clock = pygame.time.Clock()
 fps = 60
 running = True
@@ -70,46 +74,11 @@ while running:
     delta = clock.tick(fps)/1000
     screen.fill((255, 255, 255))
 
-    pg_keys = pygame.key.get_pressed()
-    keys = {
-        "a": pg_keys[pygame.K_a],
-        "d": pg_keys[pygame.K_d],
-        "w": pg_keys[pygame.K_w],
-        "o": False
-    }
-
-    for event in pygame.event.get():
-        if event.type ==  pygame.QUIT:
-            running = False
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_o:
-                keys["o"] = True
-
-    if N==1:
-        punch = player1.logic(keys, delta, map, player2, Vector((0, 2000)))
-        player2.logic(pl2_inp, delta, map, player1, Vector((0, 2000)))
-        if keys != pl1_inp:
-            pl1_inp = keys
-            data = {
-                "name": "inp",
-                "inp": pl1_inp,
-                "punch": punch
-            }
-            s.send(json.dumps(data).encode("utf-8")+b"\n")
+    if game_state=="menu":
+        running = menu(start_button, running, connect, screen)
+    elif game_state=="game":
+        running = game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N)
     else:
-        player1.logic(pl1_inp, delta, map, player2, Vector((0, 2000)))
-        punch = player2.logic(keys, delta, map, player1, Vector((0, 2000)))
-        if keys != pl2_inp:
-            pl2_inp = keys
-            data = {
-                "name": "inp",
-                "inp": pl2_inp,
-                "punch": punch
-            }
-            s.send(json.dumps(data).encode("utf-8")+b"\n")
+        running = loading(game_state, HEIGHT, WIDTH, screen, running)
 
-    player1.draw(screen)
-    player2.draw(screen)
-    for obs in map:
-        obs.draw(screen)
     pygame.display.flip()
