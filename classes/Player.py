@@ -156,7 +156,8 @@ class Player:
         d = {
             "pos": self.pos.convert_dict(),
             "vel": self.vel.convert_dict(),
-            "orientation": self.orientation
+            "orientation": self.orientation,
+            "recovered_time": self.recovered_time
         }
         return d
 
@@ -181,7 +182,10 @@ class Player:
             "ground_normal": gn,
             "ground_line": gl,
             "orientation": self.orientation,
-            "punch": self.punch.convert_dict()
+            "punch": self.punch.convert_dict(),
+            "kick": self.kick.convert_dict(),
+            "last_hit": self.last_hit,
+            "recovered_time": self.recovered_time
         }
         return d
 
@@ -210,6 +214,12 @@ class Player:
             self.orientation = d["orientation"]
         if "punch" in d.keys():
             self.punch = Punch().from_dict(d["punch"])
+        if "kick" in d.keys():
+            self.kick = Kick().from_dict(d["kick"])
+        if "last_hit" in d.keys():
+            self.last_hit = float(d["last_hit"])
+        if "recovered_time" in d.keys():
+            self.recovered_time = float(d["recovered_time"])
 
     def __str__(self):
         return f"Character(pos={self.pos}, vel={self.vel}, on_ground={self.on_ground})"
