@@ -182,6 +182,7 @@ class Player:
         self.orientation = _orientation
         self.punch = Punch()
         self.last_hit = time.time()
+        self.recovered_time = time.time()
 
     def draw(self, screen: pygame.surface.Surface):
         screen.blit(self.surf, (self.pos.x-self.width/2, self.pos.y - self.height))
@@ -266,7 +267,7 @@ class Player:
             self.pos.y = -100
 
         self.vel += grav * delta
-        if time.time() - self.last_hit > 0.2: #todo изменить на чтото типо hit_recovery_time
+        if time.time() >= self.recovered_time:
             if self.on_ground:
                 ground_vec = self.ground_line.vector.normalized()
                 if abs(ground_vec.angle_deg()) <= 60:
@@ -374,6 +375,8 @@ class Punch:
         self.damage = 5
         self.knock_back = Vector((100, -100))
         self.reload = 0.2
+        self.recovery_time = 0.2
+        self.stun = 0.3
 
     def rel_pos(self, p_width, p_height, p_orientation, p_pos):
         if p_orientation == "l":
@@ -397,6 +400,7 @@ class Punch:
             player.vel.x += -100
         if player.vel.x < -100:
             player.vel.x += 100
+        player.recovered_time = time.time()+self.recovery_time
         if self.check_reload(player):
             player.last_hit = time.time()
             if self.check_col(player, enemy, offset):
@@ -406,7 +410,8 @@ class Punch:
                     enemy.vel.y += self.knock_back.y
                     enemy.vel.x -= self.knock_back.x
                 enemy.health -= self.damage
-                enemy.last_hit = time.time()+0.5
+                enemy.last_hit = self.stun
+                enemy.recovered_time = time.time() + self.stun
                 return True
         return False
 
