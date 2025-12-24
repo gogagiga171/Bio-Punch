@@ -1,5 +1,5 @@
 from classes.Vector import Vector
-from classes.Punch import Punch
+from classes.Punch import Punch, Kick
 from classes.Line import Line
 from settings import WIDTH, HEIGHT
 import pygame
@@ -21,6 +21,7 @@ class Player:
         self.ground_line = None
         self.orientation = _orientation
         self.punch = Punch()
+        self.kick = Kick()
         self.last_hit = time.time()
         self.recovered_time = time.time()
 
@@ -144,6 +145,8 @@ class Player:
         punch = False
         if inp["o"]:
             punch = self.punch.hit(self, enemy)
+        if inp["l"]:
+            punch = self.kick.hit(self, enemy) or punch
         return punch
 
     def convert_quick_dict(self):

@@ -61,9 +61,9 @@ class Punch:
             return True
         return False
 
-    def draw_hitbox(self, player, screen):
+    def draw_hitbox(self, player, screen, color=(255, 0, 0)):
         r_pos = self.rel_pos(player.width, player.height, player.orientation, player.pos)
-        pygame.draw.rect(screen, (255, 0, 0), pygame.rect.Rect(r_pos.x, r_pos.y, self.width, self.height))
+        pygame.draw.rect(screen, color, pygame.rect.Rect(r_pos.x, r_pos.y, self.width, self.height))
 
     def from_dict(self, d):
         self.height = d["height"]
@@ -79,3 +79,21 @@ class Punch:
             "knock_back": self.knock_back
         }
         return d
+
+class Kick(Punch):
+    def __init__(self):
+        super().__init__()
+        self.height = 10
+        self.damage = 2
+        self.reload = 0.3
+        self.recovery_time = 0.3
+        self.stun = 0.5
+
+    def rel_pos(self, p_width, p_height, p_orientation, p_pos):
+        if p_orientation == "l":
+            return Vector((p_pos.x - p_width / 2 - self.width, p_pos.y - self.height))
+        if p_orientation == "r":
+            return Vector((p_pos.x + p_width / 2, p_pos.y - self.height))
+
+    def draw_hitbox(self, player, screen, color=(255, 255, 0)):
+        super().draw_hitbox(player, screen, color)

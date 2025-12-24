@@ -18,13 +18,15 @@ while running:
         "a": pg_keys[pygame.K_a],
         "d": pg_keys[pygame.K_d],
         "w": pg_keys[pygame.K_w],
-        "o": False
+        "o": False,
+        "l": False
     }
     d_keys = {
         "a": False,
         "d": False,
         "w": False,
-        "o": False
+        "o": False,
+        "l": False
     }
 
     for event in pygame.event.get():
@@ -33,6 +35,8 @@ while running:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_o:
                 keys["o"] = True
+            if event.key == pygame.K_l:
+                keys["l"] = True
 
 
     player.logic(keys, delta, map, dummy, Vector((0, 2000)))
@@ -43,6 +47,7 @@ while running:
 
     player.draw(screen)
     player.punch.draw_hitbox(player, screen)
+    player.kick.draw_hitbox(player, screen)
     dummy.draw(screen)
     for obs in map:
         obs.draw(screen)
