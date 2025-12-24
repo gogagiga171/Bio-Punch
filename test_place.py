@@ -1,7 +1,7 @@
 import pygame
 from settings import WIDTH, HEIGHT
 from map import load_map
-from classes import Vector
+from classes.Vector import Vector
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))

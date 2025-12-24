@@ -1,5 +1,5 @@
 import pygame
-from classes import *
+from classes.Vector import Vector
 import socket
 import json
 import time

@@ -1,4 +1,6 @@
-from classes import Obstacle, Vector, Player
+from classes.Obstacle import Obstacle
+from classes.Vector import Vector
+from classes.Player import Player
 
 
 def load_map():

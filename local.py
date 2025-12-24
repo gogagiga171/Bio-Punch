@@ -2,7 +2,8 @@ import pygame
 from settings import SERVER, SERVER_NOTE
 import json
 import threading
-from classes import Button, Player, Vector
+from classes.Button import Button
+from classes.Vector import Vector
 from settings import WIDTH, HEIGHT
 from map import load_map
 import socket
