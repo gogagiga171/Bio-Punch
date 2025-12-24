@@ -7,8 +7,8 @@ import threading
 from map import load_map
 from settings import MESSAGE_DELTA
 
-pl1_inp = {"a":False, "d":False, "w":False, "o":False}
-pl2_inp = {"a":False, "d":False, "w":False, "o":False}
+pl1_inp = {"a":False, "d":False, "w":False, "o":False, "l":False}
+pl2_inp = {"a":False, "d":False, "w":False, "o":False, "l":False}
 pl1_ping = 0
 pl2_ping = 0
 pl1_ping_fetched = False
@@ -68,14 +68,22 @@ def client_handler(p1, p2, cl, conn, enemy_conn, addr):
                     if data["name"] == "inp":
                         if cl == 1:
                             pl1_inp = data["inp"]
-                            if data["punch"]:
+                            if data["punch"]["punch"]:
                                 punched = player1.punch.hit(player1, player2, -player1.vel*pl1_ping)
+                                if punched:
+                                    send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
+                            if data["punch"]["kick"]:
+                                punched = player1.kick.hit(player1, player2, -player1.vel * pl1_ping)
                                 if punched:
                                     send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
                         if cl == 2:
                             pl2_inp = data["inp"]
-                            if data["punch"]:
+                            if data["punch"]["punch"]:
                                 punched = player2.punch.hit(player2, player1, -player2.vel*pl2_ping)
+                                if punched:
+                                    send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
+                            if data["punch"]["kick"]:
+                                punched = player2.kick.hit(player2, player1, -player2.vel*pl2_ping)
                                 if punched:
                                     send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
                     if data["name"] == "ping":

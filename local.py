@@ -9,8 +9,8 @@ from map import load_map
 import socket
 from game_states import game, loading, menu
 
-pl1_inp = {"a":False, "d":False, "w":False, "o":False}
-pl2_inp = {"a":False, "d":False, "w":False, "o":False}
+pl1_inp = {"a":False, "d":False, "w":False, "o":False, "l":False}
+pl2_inp = {"a":False, "d":False, "w":False, "o":False, "l":False}
 player1, player2, map = load_map()
 game_state = "menu"
 s=0
@@ -45,9 +45,11 @@ def server_handler(s):
                     if N == 1:
                         pl2_inp = data["pl2_inp"]
                         pl2_inp["o"] = False
+                        pl2_inp["l"] = False
                     if N == 2:
                         pl1_inp = data["pl1_inp"]
                         pl1_inp["o"] = False
+                        pl1_inp["l"] = False
                 elif data["name"] == "ping":
                     s.send(json.dumps({"name":"ping"}).encode("utf-8")+b"\n")
 

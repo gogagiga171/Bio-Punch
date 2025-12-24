@@ -142,11 +142,14 @@ class Player:
         if self.on_ground and abs(self.ground_line.vector.normalized().angle_deg()) <= 60:
             self.vel -= self.ground_line.vector.normalized() * self.vel.dot(self.ground_line.vector.normalized()) * 10 * delta
 
-        punch = False
+        punch = {
+            "punch": False,
+            "kick": False
+        }
         if inp["o"]:
-            punch = self.punch.hit(self, enemy)
+            punch["punch"] = self.punch.hit(self, enemy)
         if inp["l"]:
-            punch = self.kick.hit(self, enemy) or punch
+            punch["kick"] = self.kick.hit(self, enemy)
         return punch
 
     def convert_quick_dict(self):

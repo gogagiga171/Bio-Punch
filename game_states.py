@@ -3,7 +3,7 @@ import json
 import threading
 import socket
 from settings import SERVER_NOTE
-from classes import Vector
+from classes.Vector import Vector
 
 def menu(start_button, running, connect, screen):
     for event in pygame.event.get():
@@ -36,7 +36,8 @@ def game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N):
         "a": pg_keys[pygame.K_a],
         "d": pg_keys[pygame.K_d],
         "w": pg_keys[pygame.K_w],
-        "o": False
+        "o": False,
+        "l": False
     }
 
     for event in pygame.event.get():
@@ -45,12 +46,13 @@ def game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_o:
                 keys["o"] = True
+            if event.key == pygame.K_l:
+                keys["l"] = True
 
     if N == 1:
         punch = player1.logic(keys, delta, map, player2, Vector((0, 2000)))
         player2.logic(pl2_inp, delta, map, player1, Vector((0, 2000)))
         if keys != pl1_inp:
-            print(1)
             pl1_inp = keys
             data = {
                 "name": "inp",
