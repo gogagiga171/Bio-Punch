@@ -38,27 +38,56 @@ class Punch:
         if self.check_reload(player):
             player.last_hit = time.time()
             if self.check_col(player, enemy, offset):
-                if player.orientation == "r":
-                    enemy.vel += self.knock_back
+                if enemy.block.block:
+                    if player.orientation == "r":
+                        enemy.vel += self.knock_back * (1 - enemy.block.knock_back_resist)
+                    else:
+                        enemy.vel.y += self.knock_back.y * (1 - enemy.block.knock_back_resist)
+                        enemy.vel.x -= self.knock_back.x * (1 - enemy.block.knock_back_resist)
+                    enemy.health -= self.damage * (1 - enemy.block.damage_resist)
+                    enemy.last_hit = self.stun * (1 - enemy.block.stun_resist)
+                    enemy.recovered_time = time.time() + self.stun * (1 - enemy.block.stun_resist)
                 else:
-                    enemy.vel.y += self.knock_back.y
-                    enemy.vel.x -= self.knock_back.x
-                enemy.health -= self.damage
-                enemy.last_hit = self.stun
-                enemy.recovered_time = time.time() + self.stun
+                    if player.orientation == "r":
+                        enemy.vel += self.knock_back
+                    else:
+                        enemy.vel.y += self.knock_back.y
+                        enemy.vel.x -= self.knock_back.x
+                    enemy.health -= self.damage
+                    enemy.last_hit = self.stun
+                    enemy.recovered_time = time.time() + self.stun
                 return True
         return False
 
     def server_hit(self, player, enemy, ping):
         offset = -player.vel * ping
-        if self.check_col(player, enemy, offset) and self.check_reload(player):
-            if player.orientation == "r":
-                enemy.vel += self.knock_back
-            else:
-                enemy.vel.y += self.knock_back.y
-                enemy.vel.x -= self.knock_back.x
+        if player.vel.x > 100:
+            player.vel.x += -100
+        if player.vel.x < -100:
+            player.vel.x += 100
+        player.recovered_time = time.time() + self.recovery_time
+        if self.check_reload(player):
             player.last_hit = time.time()
-            return True
+            if self.check_col(player, enemy, offset):
+                if enemy.block.block:
+                    if player.orientation == "r":
+                        enemy.vel += self.knock_back*(1-enemy.block.knock_back_resist)
+                    else:
+                        enemy.vel.y += self.knock_back.y*(1-enemy.block.knock_back_resist)
+                        enemy.vel.x -= self.knock_back.x*(1-enemy.block.knock_back_resist)
+                    enemy.health -= self.damage*(1-enemy.block.damage_resist)
+                    enemy.last_hit = self.stun*(1-enemy.block.stun_resist)
+                    enemy.recovered_time = time.time() + self.stun*(1-enemy.block.stun_resist)
+                else:
+                    if player.orientation == "r":
+                        enemy.vel += self.knock_back
+                    else:
+                        enemy.vel.y += self.knock_back.y
+                        enemy.vel.x -= self.knock_back.x
+                    enemy.health -= self.damage
+                    enemy.last_hit = self.stun
+                    enemy.recovered_time = time.time() + self.stun
+                return True
         return False
 
     def draw_hitbox(self, player, screen, color=(255, 0, 0)):

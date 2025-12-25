@@ -1,6 +1,7 @@
 from classes.Vector import Vector
 from classes.Punch import Punch, Kick
 from classes.Line import Line
+from classes.Block import Block
 from settings import WIDTH, HEIGHT
 import pygame
 import time
@@ -22,6 +23,7 @@ class Player:
         self.orientation = _orientation
         self.punch = Punch()
         self.kick = Kick()
+        self.block = Block()
         self.last_hit = time.time()
         self.recovered_time = time.time()
 
@@ -146,6 +148,9 @@ class Player:
             "punch": False,
             "kick": False
         }
+        if inp["i"]:
+            self.block.block = True
+            self.recovered_time = time.time()+0.1
         if inp["o"]:
             punch["punch"] = self.punch.hit(self, enemy)
         if inp["l"]:

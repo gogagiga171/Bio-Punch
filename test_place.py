@@ -18,6 +18,7 @@ while running:
         "a": pg_keys[pygame.K_a],
         "d": pg_keys[pygame.K_d],
         "w": pg_keys[pygame.K_w],
+        "i": pg_keys[pygame.K_i],
         "o": False,
         "l": False
     }
@@ -25,6 +26,7 @@ while running:
         "a": False,
         "d": False,
         "w": False,
+        "i": True,
         "o": False,
         "l": False
     }
