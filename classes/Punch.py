@@ -116,7 +116,8 @@ class Kick(Punch):
         self.damage = 2
         self.reload = 0.3
         self.recovery_time = 0.3
-        self.stun = 0.5
+        self.stun = 0.4
+        self.knock_back = Vector((300, -100))
 
     def rel_pos(self, p_width, p_height, p_orientation, p_pos):
         if p_orientation == "l":
@@ -126,3 +127,26 @@ class Kick(Punch):
 
     def draw_hitbox(self, player, screen, color=(255, 255, 0)):
         super().draw_hitbox(player, screen, color)
+
+class CrouchPunch(Punch):
+    def __init__(self):
+        super().__init__()
+        self.width=10
+        self.height=30
+        self.damage=2
+        self.knock_back = Vector((20, -500))
+        self.stun = 0.4
+
+    def rel_pos(self, p_width, p_height, p_orientation, p_pos):
+        if p_orientation == "l":
+            return Vector((p_pos.x - p_width / 2 - self.width, p_pos.y - p_height - (self.height-25/2)))
+        if p_orientation == "r":
+            return Vector((p_pos.x + p_width / 2, p_pos.y - p_height - (self.height-25/2)))
+
+class CrouchKick(Kick):
+    def __init__(self):
+        super().__init__()
+        self.height = 7
+        self.damage = 1
+        self.knock_back = Vector((50, 0))
+        self.stun = 1

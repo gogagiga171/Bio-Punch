@@ -50,8 +50,12 @@ while running:
         player, dummy, map = load_map()
 
     player.draw(screen)
-    player.punch.draw_hitbox(player, screen)
-    player.kick.draw_hitbox(player, screen)
+    if player.crouch:
+        player.crouch_punch.draw_hitbox(player, screen)
+        player.crouch_kick.draw_hitbox(player, screen)
+    else:
+        player.punch.draw_hitbox(player, screen)
+        player.kick.draw_hitbox(player, screen)
     dummy.draw(screen)
     for obs in map:
         obs.draw(screen)

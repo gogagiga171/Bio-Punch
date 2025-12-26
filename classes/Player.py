@@ -1,5 +1,5 @@
 from classes.Vector import Vector
-from classes.Punch import Punch, Kick
+from classes.Punch import Punch, Kick, CrouchPunch, CrouchKick
 from classes.Line import Line
 from classes.Block import Block
 from settings import WIDTH, HEIGHT
@@ -14,6 +14,7 @@ class Player:
         self.normal_height = 25
         self.crouch_height = 25/2
         self.speed = 300
+        self.crouch_speed_koef = 0.3
         self.jump = 500
         self.vel = Vector((0, 0))
         self.pos = Vector((_x, _y))
@@ -24,6 +25,8 @@ class Player:
         self.orientation = _orientation
         self.punch = Punch()
         self.kick = Kick()
+        self.crouch_punch = CrouchPunch()
+        self.crouch_kick = CrouchKick()
         self.block = Block()
         self.last_hit = time.time()
         self.recovered_time = time.time()
@@ -120,12 +123,15 @@ class Player:
             if self.on_ground:
                 ground_vec = self.ground_line.vector.normalized()
                 if abs(ground_vec.angle_deg()) <= 60:
+                    koef = 1
+                    if self.crouch:
+                        koef = self.crouch_speed_koef
                     if inp["a"] and self.vel.x > -self.speed:
                         self.orientation = "l"
-                        self.vel -= ground_vec * self.speed * delta * 10
+                        self.vel -= ground_vec * self.speed * delta * 10 * koef
                     if inp["d"] and self.vel.x < self.speed:
                         self.orientation = "r"
-                        self.vel += ground_vec * self.speed * delta * 10
+                        self.vel += ground_vec * self.speed * delta * 10 * koef
                 else:
                     if inp["a"] and self.vel.x > -self.speed:
                         self.orientation = "l"
@@ -171,9 +177,15 @@ class Player:
                         self.crouch = True
             self.surf_update()
         if inp["o"]:
-            punch["punch"] = self.punch.hit(self, enemy)
+            if self.crouch:
+                punch["punch"] = self.crouch_punch.hit(self, enemy)
+            else:
+                punch["punch"] = self.punch.hit(self, enemy)
         if inp["l"]:
-            punch["kick"] = self.kick.hit(self, enemy)
+            if self.crouch:
+                punch["kick"] = self.crouch_kick.hit(self, enemy)
+            else:
+                punch["kick"] = self.kick.hit(self, enemy)
         return punch
 
     def convert_quick_dict(self):
@@ -208,6 +220,8 @@ class Player:
             "orientation": self.orientation,
             "punch": self.punch.convert_dict(),
             "kick": self.kick.convert_dict(),
+            "crouch_punch": self.crouch_punch.convert_dict(),
+            "crouch_kick": self.crouch_kick.convert_dict(),
             "last_hit": self.last_hit,
             "recovered_time": self.recovered_time,
             "crouch": self.crouch
@@ -241,6 +255,10 @@ class Player:
             self.punch = Punch().from_dict(d["punch"])
         if "kick" in d.keys():
             self.kick = Kick().from_dict(d["kick"])
+        if "crouch_punch" in d.keys():
+            self.crouch_punch = CrouchPunch().from_dict(d["crouch_punch"])
+        if "crouch_kick" in d.keys():
+            self.crouch_kick = CrouchKick().from_dict(d["crouch_kick"])
         if "last_hit" in d.keys():
             self.last_hit = float(d["last_hit"])
         if "recovered_time" in d.keys():
