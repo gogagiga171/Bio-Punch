@@ -9,8 +9,8 @@ from map import load_map
 import socket
 from game_states import game, loading, menu
 
-pl1_inp = {"a":False, "d":False, "w":False, "i":False, "o":False, "l":False}
-pl2_inp = {"a":False, "d":False, "w":False, "i":False, "o":False, "l":False}
+pl1_inp = {"a":False, "d":False, "w":False, "i":False, "k":False, "o":False, "l":False}
+pl2_inp = {"a":False, "d":False, "w":False, "i":False, "k":False, "o":False, "l":False}
 player1, player2, map = load_map()
 game_state = "menu"
 s=0

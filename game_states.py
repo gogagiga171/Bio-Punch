@@ -35,6 +35,7 @@ def game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N):
         "d": pg_keys[pygame.K_d],
         "w": pg_keys[pygame.K_w],
         "i": pg_keys[pygame.K_i],
+        "k": pg_keys[pygame.K_k],
         "o": False,
         "l": False
     }

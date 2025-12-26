@@ -7,8 +7,8 @@ import threading
 from map import load_map
 from settings import MESSAGE_DELTA
 
-pl1_inp = {"a":False, "d":False, "w":False, "i": False, "o":False, "l":False}
-pl2_inp = {"a":False, "d":False, "w":False, "i": False, "o":False, "l":False}
+pl1_inp = {"a":False, "d":False, "w":False, "i": False, "k":False, "o":False, "l":False}
+pl2_inp = {"a":False, "d":False, "w":False, "i": False, "k":False, "o":False, "l":False}
 pl1_ping = 0
 pl2_ping = 0
 pl1_ping_fetched = False

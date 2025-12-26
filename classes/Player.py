@@ -11,6 +11,8 @@ class Player:
         self.health = 100
         self.width = 10
         self.height = 25
+        self.normal_height = 25
+        self.crouch_height = 25/2
         self.speed = 300
         self.jump = 500
         self.vel = Vector((0, 0))
@@ -157,15 +159,15 @@ class Player:
             self.recovered_time = time.time()+0.1
         if inp["k"] and not self.crouch:
             self.crouch = True
-            self.height = self.height/2
+            self.height = self.crouch_height
             self.surf_update()
         elif not inp["k"] and self.crouch:
             self.crouch = False
-            self.height = self.height*2
+            self.height = self.normal_height
             for obs in map:
                 for l in obs.lines:
                     if self.check_collision(l):
-                        self.height = self.height/2
+                        self.height = self.crouch_height
                         self.crouch = True
             self.surf_update()
         if inp["o"]:
@@ -179,8 +181,7 @@ class Player:
             "pos": self.pos.convert_dict(),
             "vel": self.vel.convert_dict(),
             "orientation": self.orientation,
-            "recovered_time": self.recovered_time,
-            "crouch": self.crouch
+            "recovered_time": self.recovered_time
         }
         return d
 
