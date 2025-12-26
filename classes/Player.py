@@ -15,8 +15,7 @@ class Player:
         self.jump = 500
         self.vel = Vector((0, 0))
         self.pos = Vector((_x, _y))
-        self.surf = pygame.Surface((self.width+1, self.height+1))
-        self.surf.fill((100, 255, 100))
+        self.surf_update()
         self.on_ground = False
         self.ground_normal = Vector((0, 1))
         self.ground_line = None
@@ -26,6 +25,11 @@ class Player:
         self.block = Block()
         self.last_hit = time.time()
         self.recovered_time = time.time()
+        self.crouch = False
+
+    def surf_update(self):
+        self.surf = pygame.Surface((self.width+1, self.height+1))
+        self.surf.fill((100, 255, 100))
 
     def draw(self, screen: pygame.surface.Surface):
         screen.blit(self.surf, (self.pos.x-self.width/2, self.pos.y - self.height))
@@ -151,6 +155,19 @@ class Player:
         if inp["i"]:
             self.block.block = True
             self.recovered_time = time.time()+0.1
+        if inp["k"] and not self.crouch:
+            self.crouch = True
+            self.height = self.height/2
+            self.surf_update()
+        elif not inp["k"] and self.crouch:
+            self.crouch = False
+            self.height = self.height*2
+            for obs in map:
+                for l in obs.lines:
+                    if self.check_collision(l):
+                        self.height = self.height/2
+                        self.crouch = True
+            self.surf_update()
         if inp["o"]:
             punch["punch"] = self.punch.hit(self, enemy)
         if inp["l"]:
@@ -162,7 +179,8 @@ class Player:
             "pos": self.pos.convert_dict(),
             "vel": self.vel.convert_dict(),
             "orientation": self.orientation,
-            "recovered_time": self.recovered_time
+            "recovered_time": self.recovered_time,
+            "crouch": self.crouch
         }
         return d
 
@@ -190,7 +208,8 @@ class Player:
             "punch": self.punch.convert_dict(),
             "kick": self.kick.convert_dict(),
             "last_hit": self.last_hit,
-            "recovered_time": self.recovered_time
+            "recovered_time": self.recovered_time,
+            "crouch": self.crouch
         }
         return d
 
@@ -225,6 +244,8 @@ class Player:
             self.last_hit = float(d["last_hit"])
         if "recovered_time" in d.keys():
             self.recovered_time = float(d["recovered_time"])
+        if "crouch" in d.keys():
+            self.crouch = bool(d["crouch"])
 
     def __str__(self):
         return f"Character(pos={self.pos}, vel={self.vel}, on_ground={self.on_ground})"

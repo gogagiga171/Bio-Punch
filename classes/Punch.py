@@ -5,7 +5,7 @@ import pygame
 class Punch:
     def __init__(self):
         self.width = 20
-        self.height = 20
+        self.height = 10
         self.damage = 5
         self.knock_back = Vector((100, -100))
         self.reload = 0.2

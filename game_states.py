@@ -1,8 +1,6 @@
 import pygame
 import json
 import threading
-import socket
-from settings import SERVER_NOTE
 from classes.Vector import Vector
 
 def menu(start_button, running, connect, screen):
