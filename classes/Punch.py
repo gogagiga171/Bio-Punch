@@ -7,7 +7,7 @@ class Punch:
         self.width = 20
         self.height = 10
         self.damage = 5
-        self.enemy_knock_back = Vector((100, -100))
+        self.enemy_knock_back = Vector((100, -50))
         self.player_knock_back = Vector((-20, -20))
         self.reload = 0.2
         self.recovery_time = 0.2
@@ -126,7 +126,7 @@ class Kick(Punch):
         self.reload = 0.3
         self.recovery_time = 0.3
         self.stun = 0.4
-        self.knock_back = Vector((300, -100))
+        self.enemy_knock_back = Vector((300, -100))
 
     def rel_pos(self, p_width, p_height, p_orientation, p_pos):
         if p_orientation == "l":
