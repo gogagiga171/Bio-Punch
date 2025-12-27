@@ -1,11 +1,10 @@
 import pygame
-from classes.Vector import Vector
 import socket
 import json
 import time
 import threading
 from map import load_map
-from settings import MESSAGE_DELTA
+from settings import MESSAGE_DELTA, GRAVITY
 
 pl1_inp = {"a":False, "d":False, "w":False, "i": False, "k":False, "o":False, "l":False}
 pl2_inp = {"a":False, "d":False, "w":False, "i": False, "k":False, "o":False, "l":False}
@@ -68,24 +67,44 @@ def client_handler(p1, p2, cl, conn, enemy_conn, addr):
                     if data["name"] == "inp":
                         if cl == 1:
                             pl1_inp = data["inp"]
-                            if data["punch"]["punch"]:
-                                punched = player1.punch.hit(player1, player2, -player1.vel*pl1_ping)
-                                if punched:
-                                    send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
-                            if data["punch"]["kick"]:
-                                punched = player1.kick.hit(player1, player2, -player1.vel * pl1_ping)
-                                if punched:
-                                    send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
+                            if player1.crouch:
+                                if data["punch"]["punch"]:
+                                    punched = player1.crouch_punch.hit(player1, player2, -player1.vel * pl1_ping)
+                                    if punched:
+                                        send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
+                                if data["punch"]["kick"]:
+                                    punched = player1.crouch_kick.hit(player1, player2, -player1.vel * pl1_ping)
+                                    if punched:
+                                        send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
+                            else:
+                                if data["punch"]["punch"]:
+                                    punched = player1.punch.hit(player1, player2, -player1.vel*pl1_ping)
+                                    if punched:
+                                        send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
+                                if data["punch"]["kick"]:
+                                    punched = player1.kick.hit(player1, player2, -player1.vel * pl1_ping)
+                                    if punched:
+                                        send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
                         if cl == 2:
                             pl2_inp = data["inp"]
-                            if data["punch"]["punch"]:
-                                punched = player2.punch.hit(player2, player1, -player2.vel*pl2_ping)
-                                if punched:
-                                    send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
-                            if data["punch"]["kick"]:
-                                punched = player2.kick.hit(player2, player1, -player2.vel*pl2_ping)
-                                if punched:
-                                    send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
+                            if player2.crouch:
+                                if data["punch"]["punch"]:
+                                    punched = player2.crouch_punch.hit(player2, player1, -player2.vel*pl2_ping)
+                                    if punched:
+                                        send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
+                                if data["punch"]["kick"]:
+                                    punched = player2.crouch_kick.hit(player2, player1, -player2.vel*pl2_ping)
+                                    if punched:
+                                        send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
+                            else:
+                                if data["punch"]["punch"]:
+                                    punched = player2.punch.hit(player2, player1, -player2.vel*pl2_ping)
+                                    if punched:
+                                        send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
+                                if data["punch"]["kick"]:
+                                    punched = player2.kick.hit(player2, player1, -player2.vel*pl2_ping)
+                                    if punched:
+                                        send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
                     if data["name"] == "ping":
                         if cl == 1:
                             pl1_ping = time.time()-pl1_ping_timer_start
@@ -135,8 +154,8 @@ start = time.time()
 while True:
     delta = clock.tick(fps) / 1000
 
-    player1.logic(pl1_inp, delta, map, player2, Vector((0, 2000)))
-    player2.logic(pl2_inp, delta, map, player1, Vector((0, 2000)))
+    player1.logic(pl1_inp, delta, map, player2, GRAVITY)
+    player2.logic(pl2_inp, delta, map, player1, GRAVITY)
 
     if time.time()-start>MESSAGE_DELTA:
         send_info(conn1, conn2, player1, player2, pl1_inp, pl2_inp)

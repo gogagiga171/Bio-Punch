@@ -1,7 +1,7 @@
 import pygame
 from settings import WIDTH, HEIGHT
 from map import load_map
-from classes.Vector import Vector
+from settings import GRAVITY
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -43,8 +43,8 @@ while running:
                 keys["l"] = True
 
 
-    player.logic(keys, delta, map, dummy, Vector((0, 2000)))
-    dummy.logic(d_keys, delta, map, player, Vector((0, 2000)))
+    player.logic(keys, delta, map, dummy, GRAVITY)
+    dummy.logic(d_keys, delta, map, player, GRAVITY)
 
     if dummy.health <= 0 or player.health <= 0:
         player, dummy, map = load_map()

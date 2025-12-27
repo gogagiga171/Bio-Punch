@@ -15,7 +15,7 @@ class Player:
         self.crouch_height = 25/2
         self.speed = 300
         self.crouch_speed_koef = 0.3
-        self.jump = 500
+        self.jump = 300
         self.vel = Vector((0, 0))
         self.pos = Vector((_x, _y))
         self.surf_update()

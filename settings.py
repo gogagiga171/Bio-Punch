@@ -1,3 +1,5 @@
+from classes.Vector import Vector
+GRAVITY = Vector((0, 1000))
 MESSAGE_DELTA = 1/20
 SERVER = "192.168.11.183"
 SERVER_NOTE = "10.68.188.1"
