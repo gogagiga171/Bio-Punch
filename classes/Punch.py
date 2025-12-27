@@ -7,7 +7,8 @@ class Punch:
         self.width = 20
         self.height = 10
         self.damage = 5
-        self.knock_back = Vector((100, -100))
+        self.enemy_knock_back = Vector((100, -100))
+        self.player_knock_back = Vector((-20, -20))
         self.reload = 0.2
         self.recovery_time = 0.2
         self.stun = 0.3
@@ -40,19 +41,25 @@ class Punch:
             if self.check_col(player, enemy, offset):
                 if enemy.block.block:
                     if player.orientation == "r":
-                        enemy.vel += self.knock_back * (1 - enemy.block.knock_back_resist)
+                        enemy.vel += self.enemy_knock_back * (1 - enemy.block.knock_back_resist)
+                        player.vel += self.player_knock_back
                     else:
-                        enemy.vel.y += self.knock_back.y * (1 - enemy.block.knock_back_resist)
-                        enemy.vel.x -= self.knock_back.x * (1 - enemy.block.knock_back_resist)
+                        enemy.vel.y += self.enemy_knock_back.y * (1 - enemy.block.knock_back_resist)
+                        enemy.vel.x -= self.enemy_knock_back.x * (1 - enemy.block.knock_back_resist)
+                        player.vel.y += self.player_knock_back.y
+                        player.vel.x -= self.player_knock_back.x
                     enemy.health -= self.damage * (1 - enemy.block.damage_resist)
                     enemy.last_hit = self.stun * (1 - enemy.block.stun_resist)
                     enemy.recovered_time = time.time() + self.stun * (1 - enemy.block.stun_resist)
                 else:
                     if player.orientation == "r":
-                        enemy.vel += self.knock_back
+                        enemy.vel += self.enemy_knock_back
+                        player.vel += self.player_knock_back
                     else:
-                        enemy.vel.y += self.knock_back.y
-                        enemy.vel.x -= self.knock_back.x
+                        enemy.vel.y += self.enemy_knock_back.y
+                        enemy.vel.x -= self.enemy_knock_back.x
+                        player.vel.y += self.player_knock_back.y
+                        player.vel.x -= self.player_knock_back.x
                     enemy.health -= self.damage
                     enemy.last_hit = self.stun
                     enemy.recovered_time = time.time() + self.stun
@@ -71,19 +78,19 @@ class Punch:
             if self.check_col(player, enemy, offset):
                 if enemy.block.block:
                     if player.orientation == "r":
-                        enemy.vel += self.knock_back*(1-enemy.block.knock_back_resist)
+                        enemy.vel += self.enemy_knock_back * (1 - enemy.block.knock_back_resist)
                     else:
-                        enemy.vel.y += self.knock_back.y*(1-enemy.block.knock_back_resist)
-                        enemy.vel.x -= self.knock_back.x*(1-enemy.block.knock_back_resist)
+                        enemy.vel.y += self.enemy_knock_back.y * (1 - enemy.block.knock_back_resist)
+                        enemy.vel.x -= self.enemy_knock_back.x * (1 - enemy.block.knock_back_resist)
                     enemy.health -= self.damage*(1-enemy.block.damage_resist)
                     enemy.last_hit = self.stun*(1-enemy.block.stun_resist)
                     enemy.recovered_time = time.time() + self.stun*(1-enemy.block.stun_resist)
                 else:
                     if player.orientation == "r":
-                        enemy.vel += self.knock_back
+                        enemy.vel += self.enemy_knock_back
                     else:
-                        enemy.vel.y += self.knock_back.y
-                        enemy.vel.x -= self.knock_back.x
+                        enemy.vel.y += self.enemy_knock_back.y
+                        enemy.vel.x -= self.enemy_knock_back.x
                     enemy.health -= self.damage
                     enemy.last_hit = self.stun
                     enemy.recovered_time = time.time() + self.stun
@@ -98,14 +105,14 @@ class Punch:
         self.height = d["height"]
         self.width = d["width"]
         self.reload = d["reload"]
-        self.knock_back = Vector((0, 0)).from_dict(d["knock_back"])
+        self.enemy_knock_back = Vector((0, 0)).from_dict(d["knock_back"])
 
     def convert_dict(self):
         d = {
             "height": self.height,
             "width": self.width,
             "reload": self.reload,
-            "knock_back": self.knock_back
+            "knock_back": self.enemy_knock_back
         }
         return d
 
@@ -134,7 +141,8 @@ class CrouchPunch(Punch):
         self.width=10
         self.height=30
         self.damage=2
-        self.knock_back = Vector((20, -500))
+        self.enemy_knock_back = Vector((20, -500))
+        self.player_knock_back = Vector((0, -450))
         self.stun = 0.4
 
     def rel_pos(self, p_width, p_height, p_orientation, p_pos):
@@ -150,3 +158,4 @@ class CrouchKick(Kick):
         self.damage = 1
         self.knock_back = Vector((50, 0))
         self.stun = 1
+        self.player_knock_back = Vector((-5, 0))
