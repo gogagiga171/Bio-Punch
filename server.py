@@ -67,7 +67,16 @@ def client_handler(p1, p2, cl, conn, enemy_conn, addr):
                     if data["name"] == "inp":
                         if cl == 1:
                             pl1_inp = data["inp"]
-                            if player1.crouch:
+                            if not player1.on_ground:
+                                if data["punch"]["punch"]:
+                                    punched = player1.flight_punch.hit(player1, player2, -player1.vel * pl1_ping)
+                                    if punched:
+                                        send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
+                                if data["punch"]["kick"]:
+                                    punched = player1.flight_kick.hit(player1, player2, -player1.vel * pl1_ping)
+                                    if punched:
+                                        send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
+                            elif player1.crouch:
                                 if data["punch"]["punch"]:
                                     punched = player1.crouch_punch.hit(player1, player2, -player1.vel * pl1_ping)
                                     if punched:
@@ -87,7 +96,16 @@ def client_handler(p1, p2, cl, conn, enemy_conn, addr):
                                         send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
                         if cl == 2:
                             pl2_inp = data["inp"]
-                            if player2.crouch:
+                            if not  player2.on_ground:
+                                if data["punch"]["punch"]:
+                                    punched = player2.flight_punch.hit(player2, player1, -player2.vel*pl2_ping)
+                                    if punched:
+                                        send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
+                                if data["punch"]["kick"]:
+                                    punched = player2.flight_kick.hit(player2, player1, -player2.vel*pl2_ping)
+                                    if punched:
+                                        send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
+                            elif player2.crouch:
                                 if data["punch"]["punch"]:
                                     punched = player2.crouch_punch.hit(player2, player1, -player2.vel*pl2_ping)
                                     if punched:
