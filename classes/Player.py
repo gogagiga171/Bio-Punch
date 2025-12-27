@@ -1,5 +1,5 @@
 from classes.Vector import Vector
-from classes.Punch import Punch, Kick, CrouchPunch, CrouchKick
+from classes.Punch import Punch, Kick, CrouchPunch, CrouchKick, FlightPunch, FlightKick
 from classes.Line import Line
 from classes.Block import Block
 from settings import WIDTH, HEIGHT
@@ -27,8 +27,10 @@ class Player:
         self.kick = Kick()
         self.crouch_punch = CrouchPunch()
         self.crouch_kick = CrouchKick()
+        self.flight_punch = FlightPunch()
+        self.flight_kick = FlightKick()
         self.block = Block()
-        self.last_hit = time.time()
+        self.reload_time = time.time()
         self.recovered_time = time.time()
         self.crouch = False
 
@@ -177,12 +179,16 @@ class Player:
                         self.crouch = True
             self.surf_update()
         if inp["o"]:
-            if self.crouch:
+            if not self.on_ground:
+                punch["punch"] = self.flight_punch.hit(self, enemy)
+            elif self.crouch:
                 punch["punch"] = self.crouch_punch.hit(self, enemy)
             else:
                 punch["punch"] = self.punch.hit(self, enemy)
         if inp["l"]:
-            if self.crouch:
+            if not self.on_ground:
+                punch["kick"] = self.flight_kick.hit(self, enemy)
+            elif self.crouch:
                 punch["kick"] = self.crouch_kick.hit(self, enemy)
             else:
                 punch["kick"] = self.kick.hit(self, enemy)
@@ -222,7 +228,9 @@ class Player:
             "kick": self.kick.convert_dict(),
             "crouch_punch": self.crouch_punch.convert_dict(),
             "crouch_kick": self.crouch_kick.convert_dict(),
-            "last_hit": self.last_hit,
+            "flight_punch": self.flight_punch.convert_dict(),
+            "flight_kick": self.flight_kick.convert_dict(),
+            "last_hit": self.reload_time,
             "recovered_time": self.recovered_time,
             "crouch": self.crouch
         }
@@ -259,8 +267,12 @@ class Player:
             self.crouch_punch = CrouchPunch().from_dict(d["crouch_punch"])
         if "crouch_kick" in d.keys():
             self.crouch_kick = CrouchKick().from_dict(d["crouch_kick"])
+        if "flight_punch" in d.keys():
+            self.flight_punch = FlightPunch().from_dict(d["flight_punch"])
+        if "flight_kick" in d.keys():
+            self.flight_kick = FlightKick().from_dict(d["flight_kick"])
         if "last_hit" in d.keys():
-            self.last_hit = float(d["last_hit"])
+            self.reload_time = float(d["last_hit"])
         if "recovered_time" in d.keys():
             self.recovered_time = float(d["recovered_time"])
         if "crouch" in d.keys():

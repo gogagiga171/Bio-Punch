@@ -43,14 +43,22 @@ while running:
                 keys["l"] = True
 
 
-    player.logic(keys, delta, map, dummy, GRAVITY)
+    hit = player.logic(keys, delta, map, dummy, GRAVITY)
     dummy.logic(d_keys, delta, map, player, GRAVITY)
+
+    if player.punch.check_reload(player):
+        pygame.draw.rect(screen, (0, 255, 0), pygame.rect.Rect(0, 0, 50, 50))
+    else:
+        pygame.draw.rect(screen, (255, 0, 0), pygame.rect.Rect(0, 0, 50, 50))
 
     if dummy.health <= 0 or player.health <= 0:
         player, dummy, map = load_map()
 
     player.draw(screen)
-    if player.crouch:
+    if not player.on_ground:
+        player.flight_punch.draw_hitbox(player, screen)
+        player.flight_kick.draw_hitbox(player, screen)
+    elif player.crouch:
         player.crouch_punch.draw_hitbox(player, screen)
         player.crouch_kick.draw_hitbox(player, screen)
     else:
