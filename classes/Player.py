@@ -180,19 +180,30 @@ class Player:
             self.surf_update()
         if inp["o"]:
             if not self.on_ground:
-                punch["punch"] = self.flight_punch.hit(self, enemy)
+                punch["punch"] = self.call_hit(self.flight_punch, enemy)
             elif self.crouch:
-                punch["punch"] = self.crouch_punch.hit(self, enemy)
+                punch["punch"] = self.call_hit(self.crouch_punch, enemy)
             else:
-                punch["punch"] = self.punch.hit(self, enemy)
+                punch["punch"] = self.call_hit(self.punch, enemy)
         if inp["l"]:
             if not self.on_ground:
-                punch["kick"] = self.flight_kick.hit(self, enemy)
+                punch["kick"] = self.call_hit(self.flight_kick, enemy)
             elif self.crouch:
-                punch["kick"] = self.crouch_kick.hit(self, enemy)
+                punch["kick"] = self.call_hit(self.crouch_kick, enemy)
             else:
-                punch["kick"] = self.kick.hit(self, enemy)
+                punch["kick"] = self.call_hit(self.kick, enemy)
         return punch
+
+    def call_hit(self, punch_type, enemy):
+        if self.vel.x > 100:
+            self.vel.x += -100
+        if self.vel.x < -100:
+            self.vel.x += 100
+        self.recovered_time = time.time() + punch_type.recovery_time
+        if punch_type.check_reload(self):
+            self.reload_time = time.time() + punch_type.reload
+            return punch_type.hit(self, enemy)
+        return False
 
     def convert_quick_dict(self):
         d = {
