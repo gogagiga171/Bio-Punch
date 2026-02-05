@@ -55,15 +55,17 @@ while running:
         player, dummy, map = load_map()
 
     player.draw(screen)
-    if not player.on_ground:
-        player.flight_punch.draw_hitbox(player, screen)
-        player.flight_kick.draw_hitbox(player, screen)
-    elif player.crouch:
-        player.crouch_punch.draw_hitbox(player, screen)
-        player.crouch_kick.draw_hitbox(player, screen)
-    else:
-        player.punch.draw_hitbox(player, screen)
-        player.kick.draw_hitbox(player, screen)
+
+    #if not player.on_ground:
+    #    player.flight_punch.draw_hitbox(player, screen)
+    #    player.flight_kick.draw_hitbox(player, screen)
+    #elif player.crouch:
+    #    player.crouch_punch.draw_hitbox(player, screen)
+    #    player.crouch_kick.draw_hitbox(player, screen)
+    #else:
+    #    player.punch.draw_hitbox(player, screen)
+    #    player.kick.draw_hitbox(player, screen)
+
     dummy.draw(screen)
     for obs in map:
         obs.draw(screen)

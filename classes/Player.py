@@ -3,6 +3,7 @@ from classes.Punch import Punch, Kick, CrouchPunch, CrouchKick, FlightPunch, Fli
 from classes.Line import Line
 from classes.Block import Block
 from settings import WIDTH, HEIGHT
+from animations import generate_animations
 import pygame
 import time
 
@@ -18,7 +19,6 @@ class Player:
         self.jump = 300
         self.vel = Vector((0, 0))
         self.pos = Vector((_x, _y))
-        self.surf_update()
         self.on_ground = False
         self.ground_normal = Vector((0, 1))
         self.ground_line = None
@@ -33,13 +33,22 @@ class Player:
         self.reload_time = time.time()
         self.recovered_time = time.time()
         self.crouch = False
+        self.animation_set = generate_animations(self)
+        self.current_animation = None
+        self.set_animation("idle")
+        self.enemy = None
 
-    def surf_update(self):
-        self.surf = pygame.Surface((self.width+1, self.height+1))
-        self.surf.fill((100, 255, 100))
+    def set_animation(self, animation):
+        if self.orientation == "r":
+            animation = animation + "_right"
+        else:
+            animation = animation + "_left"
+        if animation != self.current_animation:
+            self.current_animation = animation
+            self.animation_set[self.current_animation].start()
 
     def draw(self, screen: pygame.surface.Surface):
-        screen.blit(self.surf, (self.pos.x-self.width/2, self.pos.y - self.height))
+        self.animation_set[self.current_animation].draw(self.pos, screen)
         pygame.draw.rect(screen, (0, 255, 0), pygame.Rect(self.pos.x-10, self.pos.y-self.height-10, self.health/5, 5))
         pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(self.pos.x-10+self.health/5, self.pos.y-self.height-10, (100-self.health)/5, 5))
 
@@ -108,6 +117,9 @@ class Player:
         self.on_ground = False
         self.ground_line = None
         self.ground_normal = None
+        state = "idle"
+        if self.crouch:
+            state = "crouch"
 
         if (self.vel*delta).length() > min(self.width, self.height):
             n = int((self.vel*delta).length()//min(self.width, self.height)+1)
@@ -131,9 +143,11 @@ class Player:
                     if inp["a"] and self.vel.x > -self.speed:
                         self.orientation = "l"
                         self.vel -= ground_vec * self.speed * delta * 10 * koef
+                        state = "run"
                     if inp["d"] and self.vel.x < self.speed:
                         self.orientation = "r"
                         self.vel += ground_vec * self.speed * delta * 10 * koef
+                        state = "run"
                 else:
                     if inp["a"] and self.vel.x > -self.speed:
                         self.orientation = "l"
@@ -141,8 +155,10 @@ class Player:
                     if inp["d"] and self.vel.x < self.speed:
                         self.orientation = "r"
                         self.vel.x += self.speed * delta * 4
+                    state = "jump"
                 if inp["w"]:
                     self.vel -= self.ground_normal.normalized() * self.jump
+                    state = "jump"
             else:
                 if inp["a"]:
                     self.orientation = "l"
@@ -154,9 +170,15 @@ class Player:
                         self.vel.x += self.speed * delta * 5
                 if inp["w"]:
                     self.vel.y -= self.jump * 2 * delta
+                state = "jump"
 
         if self.on_ground and abs(self.ground_line.vector.normalized().angle_deg()) <= 60:
             self.vel -= self.ground_line.vector.normalized() * self.vel.dot(self.ground_line.vector.normalized()) * 10 * delta
+
+        if state == "run" and self.crouch:
+            state = "crawl"
+
+        self.set_animation(state)
 
         punch = {
             "punch": False,
@@ -168,7 +190,6 @@ class Player:
         if inp["k"] and not self.crouch:
             self.crouch = True
             self.height = self.crouch_height
-            self.surf_update()
         elif not inp["k"] and self.crouch:
             self.crouch = False
             self.height = self.normal_height
@@ -177,7 +198,6 @@ class Player:
                     if self.check_collision(l):
                         self.height = self.crouch_height
                         self.crouch = True
-            self.surf_update()
         if inp["o"]:
             if not self.on_ground:
                 punch["punch"] = self.call_hit(self.flight_punch, enemy)

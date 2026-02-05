@@ -10,19 +10,28 @@ class Animation:
         self.start_time = time.time()
         self.fps = _fps
         self.frame = 0
+        self.time_rem = 0
+
+    def start(self):
+        self.start_time = time.time()
+        self.frame = 0
+        self.time_rem = 0
 
     def draw(self, pos:Vector, screen:pygame.surface.Surface):
         now = time.time()
-        frames_number = int((now - self.start_time)*self.fps)
+        time_rem = ((now - self.start_time)*self.fps + self.time_rem) % 1
+        frames_number = int(((now - self.start_time)*self.fps + self.time_rem) // 1)
         offset = 0
-        frame = 0
-        for i in range(self.frame, self.frame + frames_number):
-            frame = i - offset
+        frame = self.frame
+        for i in range(self.frame + 1, self.frame + frames_number + 1):
+            frame = i - offset*len(self.animation)
             if frame == len(self.animation):
                 if not self.looped:
                     break
                 offset += 1
-                frame = i - offset
+                frame = i - offset*len(self.animation)
             self.animation[frame].execute_code()
         self.animation[frame].draw(pos, screen)
         self.frame = frame
+        self.start_time = time.time()
+        self.time_rem = time_rem

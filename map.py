@@ -19,5 +19,9 @@ def load_map():
     ])
     player1 = Player(350, 350, "r")
     player2 = Player(450, 350, "l")
+    player1.enemy = player2
+    player2.enemy = player1
+    player1.set_animation("idle")
+    player2.set_animation("idle")
     map = [floor, lramp, rramp, roof]
     return player1, player2, map
