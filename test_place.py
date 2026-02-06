@@ -43,7 +43,7 @@ while running:
                 keys["l"] = True
 
 
-    hit = player.logic(keys, delta, map, dummy, GRAVITY)
+    player.logic(keys, delta, map, dummy, GRAVITY)
     dummy.logic(d_keys, delta, map, player, GRAVITY)
 
     if player.punch.check_reload(player):

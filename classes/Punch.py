@@ -3,10 +3,11 @@ import time
 import pygame
 
 class Punch:
-    def __init__(self):
+    def __init__(self, _player):
         self.width = 20
         self.height = 10
         self.damage = 5
+        self.player = _player
         self.enemy_knock_back = Vector((100, -50))
         self.player_knock_back = Vector((-20, -20))
         self.reload = 0.2
@@ -30,7 +31,9 @@ class Punch:
     def check_reload(self, player):
         return time.time() > player.reload_time
 
-    def hit(self, player, enemy, offset=Vector((0, 0))):
+    def hit(self, offset=Vector((0, 0))):
+        player = self.player
+        enemy = self.player.enemy
         if self.check_col(player, enemy, offset):
             if enemy.block.block:
                 if player.orientation == "r":
@@ -112,8 +115,8 @@ class Punch:
         return d
 
 class Kick(Punch):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, _player):
+        super().__init__(_player)
         self.height = 10
         self.damage = 2
         self.reload = 0.3
@@ -131,8 +134,8 @@ class Kick(Punch):
         super().draw_hitbox(player, screen, color)
 
 class CrouchPunch(Punch):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, _player):
+        super().__init__(_player)
         self.width=10
         self.height=30
         self.damage=2
@@ -147,8 +150,8 @@ class CrouchPunch(Punch):
             return Vector((p_pos.x + p_width / 2, p_pos.y - p_height - (self.height-25/2)))
 
 class CrouchKick(Kick):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, _player):
+        super().__init__(_player)
         self.height = 7
         self.damage = 1
         self.knock_back = Vector((50, 0))
@@ -156,8 +159,8 @@ class CrouchKick(Kick):
         self.player_knock_back = Vector((-5, 0))
 
 class FlightPunch(Punch):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, _player):
+        super().__init__(_player)
         self.height = 35
         self.width = 35
         self.damage = 4
@@ -174,8 +177,8 @@ class FlightPunch(Punch):
             return Vector((p_pos.x+p_width/2, p_pos.y - p_height - 5))
 
 class FlightKick(Kick):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, _player):
+        super().__init__(_player)
         self.height = 35
         self.width = 20
         self.damage = 8

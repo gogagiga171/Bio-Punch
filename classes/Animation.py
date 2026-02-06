@@ -27,6 +27,7 @@ class Animation:
             frame = i - offset*len(self.animation)
             if frame == len(self.animation):
                 if not self.looped:
+                    frame -= 1
                     break
                 offset += 1
                 frame = i - offset*len(self.animation)

@@ -15,8 +15,8 @@ class AnimationFrame:
 
     def draw(self, pos:Vector, screen:pygame.surface.Surface):
         screen.blit(self.image, (pos.x+self.offset.x, pos.y+self.offset.y))
-        self.execute_code()
 
     def execute_code(self):
-        if self.code is Callable:
-            self.code(self.player, self.player.enemy)
+        if not self.code is None:
+            print("code executed:", self.code)
+            self.code()

@@ -19,20 +19,20 @@ def generate_animations(player):
     idle_left_animation = Animation(idle_left_animation_frames, True, 12)
 
     # Punch right
-    punch_right_animation_frames = generate_frame_set_from_dir("resources/player/punch_r", Vector([-45, -40]), [None, None, player.punch.hit, None, None], player)
+    punch_right_animation_frames = generate_frame_set_from_dir("resources/player/punch_r", Vector([-45, -40]), [None, None, player.punch.hit, None, player.reset_animation], player)
     punch_right_animation = Animation(punch_right_animation_frames, False, 12)
 
     # Punch left
-    punch_left_animation_frames = generate_frame_set_from_dir("resources/player/punch_l", Vector([-45, -40]), [None, None, player.punch.hit, None, None], player)
+    punch_left_animation_frames = generate_frame_set_from_dir("resources/player/punch_l", Vector([-45, -40]), [None, None, player.punch.hit, None, player.reset_animation], player)
     punch_left_animation = Animation(punch_left_animation_frames, False, 12)
 
     # Kick right
-    kick_right_animation_frames = generate_frame_set_from_dir("resources/player/kick_r", Vector([-45, -40]), [None, None, None, None, None, None, None, None, None, player.kick.hit, None, None, None, None, None, None], player)
-    kick_right_animation = Animation(kick_right_animation_frames, False, 12)
+    kick_right_animation_frames = generate_frame_set_from_dir("resources/player/kick_r", Vector([-45, -40]), [None, None, None, None, None, None, None, None, None, player.kick.hit, None, None, None, None, None, player.reset_animation], player)
+    kick_right_animation = Animation(kick_right_animation_frames, False, 24)
 
     # Kick left
-    kick_left_animation_frames = generate_frame_set_from_dir("resources/player/kick_l", Vector([-45, -40]), [None, None, None, None, None, None, None, None, None, player.kick.hit, None, None, None, None, None, None], player)
-    kick_left_animation = Animation(kick_left_animation_frames, False, 12)
+    kick_left_animation_frames = generate_frame_set_from_dir("resources/player/kick_l", Vector([-45, -40]), [None, None, None, None, None, None, None, None, None, player.kick.hit, None, None, None, None, None, player.reset_animation], player)
+    kick_left_animation = Animation(kick_left_animation_frames, False, 24)
 
     # Run right
     run_right_animation_frames = generate_frame_set_from_dir("resources/player/run_r", Vector([-45, -40]), [None, None, None, None, None, None, None, None, None, None, None, None, None], player)
@@ -51,19 +51,19 @@ def generate_animations(player):
     crouch_left_animation = Animation(crouch_left_animation_frames, True, 12)
 
     # Crouch punch right
-    crouch_punch_right_animation_frames = generate_frame_set_from_dir("resources/player/crouch_punch_r", Vector([-45, -40]), [None, None, player.crouch_punch.hit, None, None, None], player)
+    crouch_punch_right_animation_frames = generate_frame_set_from_dir("resources/player/crouch_punch_r", Vector([-45, -40]), [None, None, player.crouch_punch.hit, None, None, player.reset_animation], player)
     crouch_punch_right_animation = Animation(crouch_punch_right_animation_frames, False, 12)
 
     # Crouch punch left
-    crouch_punch_left_animation_frames = generate_frame_set_from_dir("resources/player/crouch_punch_l", Vector([-45, -40]), [None, None, player.crouch_punch.hit, None, None, None], player)
+    crouch_punch_left_animation_frames = generate_frame_set_from_dir("resources/player/crouch_punch_l", Vector([-45, -40]), [None, None, player.crouch_punch.hit, None, None, player.reset_animation], player)
     crouch_punch_left_animation = Animation(crouch_punch_left_animation_frames, False, 12)
 
     # Crouch kick right
-    crouch_kick_right_animation_frames = generate_frame_set_from_dir("resources/player/crouch_kick_r", Vector([-45, -40]), [None, None, None, player.crouch_kick.hit, None, None, None], player)
+    crouch_kick_right_animation_frames = generate_frame_set_from_dir("resources/player/crouch_kick_r", Vector([-45, -40]), [None, None, None, player.crouch_kick.hit, None, None, player.reset_animation], player)
     crouch_kick_right_animation = Animation(crouch_kick_right_animation_frames, False, 12)
 
     # Crouch kick left
-    crouch_kick_left_animation_frames = generate_frame_set_from_dir("resources/player/crouch_kick_l", Vector([-45, -40]), [None, None, None, player.crouch_kick.hit, None, None, None], player)
+    crouch_kick_left_animation_frames = generate_frame_set_from_dir("resources/player/crouch_kick_l", Vector([-45, -40]), [None, None, None, player.crouch_kick.hit, None, None, player.reset_animation], player)
     crouch_kick_left_animation = Animation(crouch_kick_left_animation_frames, False, 12)
 
     # Crawl right
@@ -83,20 +83,20 @@ def generate_animations(player):
     jump_left_animation = Animation(jump_left_animation_frames, True, 12)
 
     # Jump punch right
-    jump_punch_right_animation_frames = generate_frame_set_from_dir("resources/player/jump_punch_r", Vector([-45, -40]), [None, None, player.flight_punch.hit, None, None], player)
-    jump_punch_right_animation = Animation(jump_punch_right_animation_frames, False, 12)
+    jump_punch_right_animation_frames = generate_frame_set_from_dir("resources/player/jump_punch_r", Vector([-45, -40]), [None, None, player.flight_punch.hit, None, player.reset_animation], player)
+    jump_punch_right_animation = Animation(jump_punch_right_animation_frames, False, 24)
 
     # Jump punch left
-    jump_punch_left_animation_frames = generate_frame_set_from_dir("resources/player/jump_punch_l", Vector([-45, -40]), [None, None, player.flight_punch.hit, None, None], player)
-    jump_punch_left_animation = Animation(jump_punch_left_animation_frames, False, 12)
+    jump_punch_left_animation_frames = generate_frame_set_from_dir("resources/player/jump_punch_l", Vector([-45, -40]), [None, None, player.flight_punch.hit, None, player.reset_animation], player)
+    jump_punch_left_animation = Animation(jump_punch_left_animation_frames, False, 24)
 
     # Jump kick right
-    jump_kick_right_animation_frames = generate_frame_set_from_dir("resources/player/jump_kick_r", Vector([-45, -40]), [None, None, None, None, None, None, None, player.flight_kick.hit, None, None, None], player)
-    jump_kick_right_animation = Animation(jump_kick_right_animation_frames, False, 12)
+    jump_kick_right_animation_frames = generate_frame_set_from_dir("resources/player/jump_kick_r", Vector([-45, -40]), [None, None, None, None, None, None, None, player.flight_kick.hit, None, None, player.reset_animation], player)
+    jump_kick_right_animation = Animation(jump_kick_right_animation_frames, False, 24)
 
     # Jump kick left
-    jump_kick_left_animation_frames = generate_frame_set_from_dir("resources/player/jump_kick_l", Vector([-45, -40]), [None, None, None, None, None, None, None, player.flight_kick.hit, None, None, None], player)
-    jump_kick_left_animation = Animation(jump_kick_left_animation_frames, False, 12)
+    jump_kick_left_animation_frames = generate_frame_set_from_dir("resources/player/jump_kick_l", Vector([-45, -40]), [None, None, None, None, None, None, None, player.flight_kick.hit, None, None, player.reset_animation], player)
+    jump_kick_left_animation = Animation(jump_kick_left_animation_frames, False, 24)
 
     animations_set = {
         "idle_right": idle_right_animation,

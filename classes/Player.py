@@ -23,12 +23,12 @@ class Player:
         self.ground_normal = Vector((0, 1))
         self.ground_line = None
         self.orientation = _orientation
-        self.punch = Punch()
-        self.kick = Kick()
-        self.crouch_punch = CrouchPunch()
-        self.crouch_kick = CrouchKick()
-        self.flight_punch = FlightPunch()
-        self.flight_kick = FlightKick()
+        self.punch = Punch(self)
+        self.kick = Kick(self)
+        self.crouch_punch = CrouchPunch(self)
+        self.crouch_kick = CrouchKick(self)
+        self.flight_punch = FlightPunch(self)
+        self.flight_kick = FlightKick(self)
         self.block = Block()
         self.reload_time = time.time()
         self.recovered_time = time.time()
@@ -38,14 +38,27 @@ class Player:
         self.set_animation("idle")
         self.enemy = None
 
+    def reset_animation(self):
+        self.current_animation = None
+        print("reseted")
+
     def set_animation(self, animation):
-        if self.orientation == "r":
-            animation = animation + "_right"
-        else:
-            animation = animation + "_left"
-        if animation != self.current_animation:
-            self.current_animation = animation
-            self.animation_set[self.current_animation].start()
+        not_skipable_animations = [
+            "punch_right", "punch_left",
+            "kick_right", "kick_left",
+            "crouch_punch_right", "crouch_punch_left",
+            "crouch_kick_right", "crouch_kick_left",
+            "jump_punch_right", "jump_punch_left",
+            "jump_kick_right", "jump_kick_left"
+        ]
+        if not self.current_animation in not_skipable_animations:
+            if self.orientation == "r":
+                animation = animation + "_right"
+            else:
+                animation = animation + "_left"
+            if animation != self.current_animation:
+                self.current_animation = animation
+                self.animation_set[self.current_animation].start()
 
     def draw(self, screen: pygame.surface.Surface):
         self.animation_set[self.current_animation].draw(self.pos, screen)
@@ -180,10 +193,6 @@ class Player:
 
         self.set_animation(state)
 
-        punch = {
-            "punch": False,
-            "kick": False
-        }
         if inp["i"]:
             self.block.block = True
             self.recovered_time = time.time()+0.1
@@ -200,21 +209,20 @@ class Player:
                         self.crouch = True
         if inp["o"]:
             if not self.on_ground:
-                punch["punch"] = self.call_hit(self.flight_punch, enemy)
+                self.call_hit(self.flight_punch, "punch")
             elif self.crouch:
-                punch["punch"] = self.call_hit(self.crouch_punch, enemy)
+                self.call_hit(self.crouch_punch, "punch")
             else:
-                punch["punch"] = self.call_hit(self.punch, enemy)
+                self.call_hit(self.punch, "punch")
         if inp["l"]:
             if not self.on_ground:
-                punch["kick"] = self.call_hit(self.flight_kick, enemy)
+                self.call_hit(self.flight_kick, "kick")
             elif self.crouch:
-                punch["kick"] = self.call_hit(self.crouch_kick, enemy)
+                self.call_hit(self.crouch_kick, "kick")
             else:
-                punch["kick"] = self.call_hit(self.kick, enemy)
-        return punch
+                self.call_hit(self.kick, "kick")
 
-    def call_hit(self, punch_type, enemy):
+    def call_hit(self, punch_type, punch_type_str):
         if self.vel.x > 100:
             self.vel.x += -100
         if self.vel.x < -100:
@@ -222,8 +230,11 @@ class Player:
         self.recovered_time = time.time() + punch_type.recovery_time
         if punch_type.check_reload(self):
             self.reload_time = time.time() + punch_type.reload
-            return punch_type.hit(self, enemy)
-        return False
+            if not self.on_ground:
+                punch_type_str = "jump_"+punch_type_str
+            elif self.crouch:
+                punch_type_str = "crouch_"+punch_type_str
+            self.set_animation(punch_type_str)
 
     def convert_quick_dict(self):
         d = {
