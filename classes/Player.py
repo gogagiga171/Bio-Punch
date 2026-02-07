@@ -10,6 +10,7 @@ import time
 class Player:
     def __init__(self, _x, _y, _orientation):
         self.health = 100
+        self.maxHealth = 100
         self.width = 10
         self.height = 25
         self.normal_height = 25
@@ -40,7 +41,6 @@ class Player:
 
     def reset_animation(self):
         self.current_animation = None
-        print("reseted")
 
     def set_animation(self, animation):
         not_skipable_animations = [
@@ -63,7 +63,7 @@ class Player:
     def draw(self, screen: pygame.surface.Surface):
         self.animation_set[self.current_animation].draw(self.pos, screen)
         pygame.draw.rect(screen, (0, 255, 0), pygame.Rect(self.pos.x-10, self.pos.y-self.height-10, self.health/5, 5))
-        pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(self.pos.x-10+self.health/5, self.pos.y-self.height-10, (100-self.health)/5, 5))
+        pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(self.pos.x-10+self.health/5, self.pos.y-self.height-10, (self.maxHealth-self.health)/5, 5))
 
     def check_collision(self, line):
         a = self.pos + Vector((-self.width/2, 0))

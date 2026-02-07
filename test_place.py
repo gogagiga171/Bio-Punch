@@ -2,13 +2,20 @@ import pygame
 from settings import WIDTH, HEIGHT
 from map import load_map
 from settings import GRAVITY
+from classes.Player import Player
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 fps = 60
 running = True
-player, dummy, map = load_map()
+
+player1 = Player(350, 350, "r")
+dummy = Player(450, 350, "l")
+player1.enemy = dummy
+dummy.enemy = player1
+
+player, dummy, map = load_map(player1, dummy)
 while running:
     delta = clock.tick(fps)/1000
     screen.fill((255, 255, 255))
@@ -52,7 +59,7 @@ while running:
         pygame.draw.rect(screen, (255, 0, 0), pygame.rect.Rect(0, 0, 50, 50))
 
     if dummy.health <= 0 or player.health <= 0:
-        player, dummy, map = load_map()
+        player, dummy, map = load_map(player1, dummy)
 
     player.draw(screen)
 

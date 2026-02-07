@@ -18,5 +18,4 @@ class AnimationFrame:
 
     def execute_code(self):
         if not self.code is None:
-            print("code executed:", self.code)
             self.code()
