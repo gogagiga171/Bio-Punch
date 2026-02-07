@@ -23,7 +23,12 @@ def load_map(player1, player2):
     player2.health = player2.maxHealth
     player1.pos = Vector([350, 350])
     player2.pos = Vector([450, 350])
-    player1.set_animation("idle")
-    player2.set_animation("idle")
+    player1.vel = Vector([0, 0])
+    player2.vel = Vector([0, 0])
+    try:
+        player1.set_animation("idle")
+        player2.set_animation("idle")
+    except NotImplementedError:
+        pass
     map = [floor, lramp, rramp, roof]
     return player1, player2, map

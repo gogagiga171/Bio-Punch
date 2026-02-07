@@ -5,6 +5,7 @@ import time
 import threading
 from map import load_map
 from settings import MESSAGE_DELTA, GRAVITY
+from classes.Player import ServerSidePlayer
 
 pl1_inp = {"a":False, "d":False, "w":False, "i": False, "k":False, "o":False, "l":False}
 pl2_inp = {"a":False, "d":False, "w":False, "i": False, "k":False, "o":False, "l":False}
@@ -67,62 +68,41 @@ def client_handler(p1, p2, cl, conn, enemy_conn, addr):
                     if data["name"] == "inp":
                         if cl == 1:
                             pl1_inp = data["inp"]
-                            if not player1.on_ground:
-                                if data["punch"]["punch"]:
-                                    punched = player1.flight_punch.hit(player1, player2, -player1.vel * pl1_ping)
-                                    if punched:
-                                        send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
-                                if data["punch"]["kick"]:
-                                    punched = player1.flight_kick.hit(player1, player2, -player1.vel * pl1_ping)
-                                    if punched:
-                                        send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
-                            elif player1.crouch:
-                                if data["punch"]["punch"]:
-                                    punched = player1.crouch_punch.hit(player1, player2, -player1.vel * pl1_ping)
-                                    if punched:
-                                        send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
-                                if data["punch"]["kick"]:
-                                    punched = player1.crouch_kick.hit(player1, player2, -player1.vel * pl1_ping)
-                                    if punched:
-                                        send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
-                            else:
-                                if data["punch"]["punch"]:
-                                    punched = player1.punch.hit(player1, player2, -player1.vel*pl1_ping)
-                                    if punched:
-                                        send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
-                                if data["punch"]["kick"]:
-                                    punched = player1.kick.hit(player1, player2, -player1.vel * pl1_ping)
-                                    if punched:
-                                        send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
+                            send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=False)
                         if cl == 2:
                             pl2_inp = data["inp"]
-                            if not  player2.on_ground:
-                                if data["punch"]["punch"]:
-                                    punched = player2.flight_punch.hit(player2, player1, -player2.vel*pl2_ping)
-                                    if punched:
-                                        send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
-                                if data["punch"]["kick"]:
-                                    punched = player2.flight_kick.hit(player2, player1, -player2.vel*pl2_ping)
-                                    if punched:
-                                        send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
-                            elif player2.crouch:
-                                if data["punch"]["punch"]:
-                                    punched = player2.crouch_punch.hit(player2, player1, -player2.vel*pl2_ping)
-                                    if punched:
-                                        send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
-                                if data["punch"]["kick"]:
-                                    punched = player2.crouch_kick.hit(player2, player1, -player2.vel*pl2_ping)
-                                    if punched:
-                                        send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
-                            else:
-                                if data["punch"]["punch"]:
-                                    punched = player2.punch.hit(player2, player1, -player2.vel*pl2_ping)
-                                    if punched:
-                                        send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
-                                if data["punch"]["kick"]:
-                                    punched = player2.kick.hit(player2, player1, -player2.vel*pl2_ping)
-                                    if punched:
-                                        send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
+                            send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=False)
+                    if data["name"] == "punch":
+                        if cl == 1:
+                            if data["type"] == "punch":
+                                punched = player1.punch.hit(player1.vel*pl1_ping)
+                            if data["type"] == "kick":
+                                punched = player1.kick.hit(player1.vel*pl1_ping)
+                            if data["type"] == "flight_punch":
+                                punched = player1.flight_punch.hit(player1.vel*pl1_ping)
+                            if data["type"] == "flight_kick":
+                                punched = player1.flight_kick.hit(player1.vel*pl1_ping)
+                            if data["type"] == "crouch_punch":
+                                punched = player1.crouch_punch.hit(player1.vel*pl1_ping)
+                            if data["type"] == "crouch_kick":
+                                punched = player1.crouch_kick.hit(player1.vel*pl1_ping)
+                            if punched:
+                                send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
+                        if cl == 2:
+                            if data["type"] == "punch":
+                                punched = player2.punch.hit(player2.vel*pl2_ping)
+                            if data["type"] == "kick":
+                                punched = player2.kick.hit(player2.vel*pl2_ping)
+                            if data["type"] == "flight_punch":
+                                punched = player2.flight_punch.hit(player2.vel*pl2_ping)
+                            if data["type"] == "flight_kick":
+                                punched = player2.flight_kick.hit(player2.vel*pl2_ping)
+                            if data["type"] == "crouch_punch":
+                                punched = player2.crouch_punch.hit(player2.vel*pl2_ping)
+                            if data["type"] == "crouch_kick":
+                                punched = player2.crouch_kick.hit(player2.vel*pl2_ping)
+                            if punched:
+                                send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
                     if data["name"] == "ping":
                         if cl == 1:
                             pl1_ping = time.time()-pl1_ping_timer_start
@@ -145,7 +125,11 @@ conn2.send(b"2\n")
 conn1.send(b"game_start\n")
 conn2.send(b"game_start\n")
 
-player1, player2, map = load_map()
+player1 = ServerSidePlayer(350, 350, "r")
+player2 = ServerSidePlayer(450, 350, "l")
+player1.enemy = player2
+player2.enemy = player1
+player1, player2, map = load_map(player1, player2)
 
 th1 = threading.Thread(
     target=client_handler, args=(player1, player2, 1, conn1, conn2, addr1)
@@ -180,5 +164,5 @@ while True:
         start = time.time()
 
     if player1.health <= 0 or player2.health <= 0:
-        player1, player2, map = load_map()
+        player1, player2, map = load_map(player1, player2)
         send_info(conn1, conn2, player1, player2, pl1_inp, pl2_inp, health=True)

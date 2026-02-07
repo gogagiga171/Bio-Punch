@@ -51,25 +51,23 @@ def game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N):
                 keys["l"] = True
 
     if N == 1:
-        punch = player1.logic(keys, delta, map, player2, GRAVITY)
+        player1.logic(keys, delta, map, player2, GRAVITY)
         player2.logic(pl2_inp, delta, map, player1, GRAVITY)
         if keys != pl1_inp:
             pl1_inp = keys
             data = {
                 "name": "inp",
-                "inp": pl1_inp,
-                "punch": punch
+                "inp": pl1_inp
             }
             s.send(json.dumps(data).encode("utf-8") + b"\n")
     else:
         player1.logic(pl1_inp, delta, map, player2, GRAVITY)
-        punch = player2.logic(keys, delta, map, player1, GRAVITY)
+        player2.logic(keys, delta, map, player1, GRAVITY)
         if keys != pl2_inp:
             pl2_inp = keys
             data = {
                 "name": "inp",
-                "inp": pl2_inp,
-                "punch": punch
+                "inp": pl2_inp
             }
             s.send(json.dumps(data).encode("utf-8") + b"\n")
 

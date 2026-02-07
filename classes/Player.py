@@ -8,7 +8,7 @@ import pygame
 import time
 
 class Player:
-    def __init__(self, _x, _y, _orientation):
+    def __init__(self, _x, _y, _orientation, _socket=False): #warn поменять в PlyerServerSide тоже при изменении этого
         self.health = 100
         self.maxHealth = 100
         self.width = 10
@@ -24,12 +24,12 @@ class Player:
         self.ground_normal = Vector((0, 1))
         self.ground_line = None
         self.orientation = _orientation
-        self.punch = Punch(self)
-        self.kick = Kick(self)
-        self.crouch_punch = CrouchPunch(self)
-        self.crouch_kick = CrouchKick(self)
-        self.flight_punch = FlightPunch(self)
-        self.flight_kick = FlightKick(self)
+        self.punch = Punch(self, _server=False, _socket=_socket)
+        self.kick = Kick(self, _server=False, _socket=_socket)
+        self.crouch_punch = CrouchPunch(self, _server=False, _socket=_socket)
+        self.crouch_kick = CrouchKick(self, _server=False, _socket=_socket)
+        self.flight_punch = FlightPunch(self, _server=False, _socket=_socket)
+        self.flight_kick = FlightKick(self, _server=False, _socket=_socket)
         self.block = Block()
         self.reload_time = time.time()
         self.recovered_time = time.time()
@@ -38,6 +38,22 @@ class Player:
         self.current_animation = None
         self.set_animation("idle")
         self.enemy = None
+
+    def update_sockets(self, _socket):
+        self.punch.socket = _socket
+        self.kick.socket = _socket
+        self.crouch_punch.socket = _socket
+        self.crouch_kick.socket = _socket
+        self.flight_punch.socket = _socket
+        self.flight_kick.socket = _socket
+
+    def update_punches_real_player(self, _real_player):
+        self.punch.real_player = _real_player
+        self.kick.real_player = _real_player
+        self.crouch_punch.real_player = _real_player
+        self.crouch_kick.real_player = _real_player
+        self.flight_punch.real_player = _real_player
+        self.flight_kick.real_player = _real_player
 
     def reset_animation(self):
         self.current_animation = None
@@ -106,7 +122,6 @@ class Player:
         delta_seg = delta/((self.vel*delta).length()/0.5)
         vel_seg = self.vel.normalized()*0.5
         delta_left = delta
-        f = False
         filtered_lines = []
         for obs in map:
             for l in obs.lines:
@@ -126,7 +141,7 @@ class Player:
             delta_left -= delta_seg
         return
 
-    def logic(self, inp, delta, map, enemy, grav):
+    def logic(self, inp, delta, map, enemy, grav): #warn поменять в PlyerServerSide тоже при изменении этого
         self.on_ground = False
         self.ground_line = None
         self.ground_normal = None
@@ -222,7 +237,7 @@ class Player:
             else:
                 self.call_hit(self.kick, "kick")
 
-    def call_hit(self, punch_type, punch_type_str):
+    def call_hit(self, punch_type, punch_type_str): #warn поменять в PlyerServerSide тоже при изменении этого
         if self.vel.x > 100:
             self.vel.x += -100
         if self.vel.x < -100:
@@ -302,17 +317,17 @@ class Player:
         if "orientation" in d.keys():
             self.orientation = d["orientation"]
         if "punch" in d.keys():
-            self.punch = Punch().from_dict(d["punch"])
+            self.punch = Punch(self).from_dict(d["punch"])
         if "kick" in d.keys():
-            self.kick = Kick().from_dict(d["kick"])
+            self.kick = Kick(self).from_dict(d["kick"])
         if "crouch_punch" in d.keys():
-            self.crouch_punch = CrouchPunch().from_dict(d["crouch_punch"])
+            self.crouch_punch = CrouchPunch(self).from_dict(d["crouch_punch"])
         if "crouch_kick" in d.keys():
-            self.crouch_kick = CrouchKick().from_dict(d["crouch_kick"])
+            self.crouch_kick = CrouchKick(self).from_dict(d["crouch_kick"])
         if "flight_punch" in d.keys():
-            self.flight_punch = FlightPunch().from_dict(d["flight_punch"])
+            self.flight_punch = FlightPunch(self).from_dict(d["flight_punch"])
         if "flight_kick" in d.keys():
-            self.flight_kick = FlightKick().from_dict(d["flight_kick"])
+            self.flight_kick = FlightKick(self).from_dict(d["flight_kick"])
         if "last_hit" in d.keys():
             self.reload_time = float(d["last_hit"])
         if "recovered_time" in d.keys():
@@ -322,3 +337,134 @@ class Player:
 
     def __str__(self):
         return f"Character(pos={self.pos}, vel={self.vel}, on_ground={self.on_ground})"
+
+
+class ServerSidePlayer(Player):
+    def __init__(self, _x, _y, _orientation, _socket=None):
+        self.health = 100
+        self.maxHealth = 100
+        self.width = 10
+        self.height = 25
+        self.normal_height = 25
+        self.crouch_height = 25/2
+        self.speed = 300
+        self.crouch_speed_koef = 0.3
+        self.jump = 300
+        self.vel = Vector((0, 0))
+        self.pos = Vector((_x, _y))
+        self.on_ground = False
+        self.ground_normal = Vector((0, 1))
+        self.ground_line = None
+        self.orientation = _orientation
+        self.punch = Punch(self, _server=True, _socket=_socket)
+        self.kick = Kick(self, _server=True, _socket=_socket)
+        self.crouch_punch = CrouchPunch(self, _server=True, _socket=_socket)
+        self.crouch_kick = CrouchKick(self, _server=True, _socket=_socket)
+        self.flight_punch = FlightPunch(self, _server=True, _socket=_socket)
+        self.flight_kick = FlightKick(self, _server=True, _socket=_socket)
+        self.block = Block()
+        self.reload_time = time.time()
+        self.recovered_time = time.time()
+        self.crouch = False
+        self.enemy = None
+
+    def reset_animation(self):
+        raise NotImplementedError
+
+    def set_animation(self, animation):
+        raise NotImplementedError
+
+    def draw(self, screen: pygame.surface.Surface):
+        raise NotImplementedError
+
+    def logic(self, inp, delta, map, enemy, grav):
+        self.on_ground = False
+        self.ground_line = None
+        self.ground_normal = None
+
+        if (self.vel*delta).length() > min(self.width, self.height):
+            n = int((self.vel*delta).length()//min(self.width, self.height)+1)
+            for i in range(n):
+                self.move(delta/n, map)
+        else:
+            self.move(delta, map)
+
+        if self.pos.y > HEIGHT + self.height + 100:
+            self.pos.x = WIDTH/2
+            self.pos.y = -100
+
+        self.vel += grav * delta
+        if time.time() >= self.recovered_time:
+            if self.on_ground:
+                ground_vec = self.ground_line.vector.normalized()
+                if abs(ground_vec.angle_deg()) <= 60:
+                    koef = 1
+                    if self.crouch:
+                        koef = self.crouch_speed_koef
+                    if inp["a"] and self.vel.x > -self.speed:
+                        self.orientation = "l"
+                        self.vel -= ground_vec * self.speed * delta * 10 * koef
+                    if inp["d"] and self.vel.x < self.speed:
+                        self.orientation = "r"
+                        self.vel += ground_vec * self.speed * delta * 10 * koef
+                else:
+                    if inp["a"] and self.vel.x > -self.speed:
+                        self.orientation = "l"
+                        self.vel.x -= self.speed * delta * 4
+                    if inp["d"] and self.vel.x < self.speed:
+                        self.orientation = "r"
+                        self.vel.x += self.speed * delta * 4
+                if inp["w"]:
+                    self.vel -= self.ground_normal.normalized() * self.jump
+            else:
+                if inp["a"]:
+                    self.orientation = "l"
+                    if self.vel.x > -self.speed / 2:
+                        self.vel.x -= self.speed * delta * 5
+                if inp["d"]:
+                    self.orientation = "r"
+                    if self.vel.x < self.speed / 5:
+                        self.vel.x += self.speed * delta * 5
+                if inp["w"]:
+                    self.vel.y -= self.jump * 2 * delta
+
+        if self.on_ground and abs(self.ground_line.vector.normalized().angle_deg()) <= 60:
+            self.vel -= self.ground_line.vector.normalized() * self.vel.dot(self.ground_line.vector.normalized()) * 10 * delta
+
+        if inp["i"]:
+            self.block.block = True
+            self.recovered_time = time.time()+0.1
+        if inp["k"] and not self.crouch:
+            self.crouch = True
+            self.height = self.crouch_height
+        elif not inp["k"] and self.crouch:
+            self.crouch = False
+            self.height = self.normal_height
+            for obs in map:
+                for l in obs.lines:
+                    if self.check_collision(l):
+                        self.height = self.crouch_height
+                        self.crouch = True
+        if inp["o"]:
+            if not self.on_ground:
+                self.call_hit(self.flight_punch, "punch")
+            elif self.crouch:
+                self.call_hit(self.crouch_punch, "punch")
+            else:
+                self.call_hit(self.punch, "punch")
+        if inp["l"]:
+            if not self.on_ground:
+                self.call_hit(self.flight_kick, "kick")
+            elif self.crouch:
+                self.call_hit(self.crouch_kick, "kick")
+            else:
+                self.call_hit(self.kick, "kick")
+
+    def call_hit(self, punch_type, punch_type_str):
+        if self.vel.x > 100:
+            self.vel.x += -100
+        if self.vel.x < -100:
+            self.vel.x += 100
+        self.recovered_time = time.time() + punch_type.recovery_time
+        if punch_type.check_reload(self):
+            self.reload_time = time.time() + punch_type.reload

@@ -1,9 +1,10 @@
 from classes.Vector import Vector
 import time
 import pygame
+import json
 
 class Punch:
-    def __init__(self, _player):
+    def __init__(self, _player, _server=False, _socket=None, _real_player = True):
         self.width = 20
         self.height = 10
         self.damage = 5
@@ -13,6 +14,10 @@ class Punch:
         self.reload = 0.2
         self.recovery_time = 0.2
         self.stun = 0.3
+        self.server = _server
+        self.type = "punch"
+        self.socket = _socket
+        self.real_player = _real_player
 
     def rel_pos(self, p_width, p_height, p_orientation, p_pos):
         if p_orientation == "l":
@@ -32,35 +37,42 @@ class Punch:
         return time.time() > player.reload_time
 
     def hit(self, offset=Vector((0, 0))):
-        player = self.player
-        enemy = self.player.enemy
-        if self.check_col(player, enemy, offset):
-            if enemy.block.block:
-                if player.orientation == "r":
-                    enemy.vel += self.enemy_knock_back * (1 - enemy.block.knock_back_resist)
-                    player.vel += self.player_knock_back
+        if self.real_player:
+            player = self.player
+            enemy = self.player.enemy
+            if self.check_col(player, enemy, offset):
+                if enemy.block.block:
+                    if player.orientation == "r":
+                        enemy.vel += self.enemy_knock_back * (1 - enemy.block.knock_back_resist)
+                        player.vel += self.player_knock_back
+                    else:
+                        enemy.vel.y += self.enemy_knock_back.y * (1 - enemy.block.knock_back_resist)
+                        enemy.vel.x -= self.enemy_knock_back.x * (1 - enemy.block.knock_back_resist)
+                        player.vel.y += self.player_knock_back.y
+                        player.vel.x -= self.player_knock_back.x
+                    enemy.health -= self.damage * (1 - enemy.block.damage_resist)
+                    enemy.reload_time = time.time() + self.stun * (1 - enemy.block.stun_resist)
+                    enemy.recovered_time = time.time() + self.stun * (1 - enemy.block.stun_resist)
                 else:
-                    enemy.vel.y += self.enemy_knock_back.y * (1 - enemy.block.knock_back_resist)
-                    enemy.vel.x -= self.enemy_knock_back.x * (1 - enemy.block.knock_back_resist)
-                    player.vel.y += self.player_knock_back.y
-                    player.vel.x -= self.player_knock_back.x
-                enemy.health -= self.damage * (1 - enemy.block.damage_resist)
-                enemy.reload_time = time.time() + self.stun * (1 - enemy.block.stun_resist)
-                enemy.recovered_time = time.time() + self.stun * (1 - enemy.block.stun_resist)
-            else:
-                if player.orientation == "r":
-                    enemy.vel += self.enemy_knock_back
-                    player.vel += self.player_knock_back
-                else:
-                    enemy.vel.y += self.enemy_knock_back.y
-                    enemy.vel.x -= self.enemy_knock_back.x
-                    player.vel.y += self.player_knock_back.y
-                    player.vel.x -= self.player_knock_back.x
-                enemy.health -= self.damage
-                enemy.reload_time = time.time() + self.stun
-                enemy.recovered_time = time.time() + self.stun
-            return True
-        return False
+                    if player.orientation == "r":
+                        enemy.vel += self.enemy_knock_back
+                        player.vel += self.player_knock_back
+                    else:
+                        enemy.vel.y += self.enemy_knock_back.y
+                        enemy.vel.x -= self.enemy_knock_back.x
+                        player.vel.y += self.player_knock_back.y
+                        player.vel.x -= self.player_knock_back.x
+                    enemy.health -= self.damage
+                    enemy.reload_time = time.time() + self.stun
+                    enemy.recovered_time = time.time() + self.stun
+                if not self.server:
+                    data = {
+                        "name": "punch",
+                        "type": self.type
+                    }
+                    self.socket.send(json.dumps(data).encode("utf-8") + b"\n")
+                return True
+            return False
 
     def server_hit(self, player, enemy, ping):
         offset = -player.vel * ping
@@ -115,14 +127,15 @@ class Punch:
         return d
 
 class Kick(Punch):
-    def __init__(self, _player):
-        super().__init__(_player)
+    def __init__(self, _player, _server=False, _socket=None):
+        super().__init__(_player, _server, _socket)
         self.height = 10
         self.damage = 2
         self.reload = 0.3
         self.recovery_time = 0.3
         self.stun = 0.4
         self.enemy_knock_back = Vector((300, -100))
+        self.type = "kick"
 
     def rel_pos(self, p_width, p_height, p_orientation, p_pos):
         if p_orientation == "l":
@@ -134,14 +147,15 @@ class Kick(Punch):
         super().draw_hitbox(player, screen, color)
 
 class CrouchPunch(Punch):
-    def __init__(self, _player):
-        super().__init__(_player)
+    def __init__(self, _player, _server=False, _socket=None):
+        super().__init__(_player, _server, _socket)
         self.width=10
         self.height=30
         self.damage=2
         self.enemy_knock_back = Vector((20, -500))
         self.player_knock_back = Vector((0, -450))
         self.stun = 0.4
+        self.type = "crouch_punch"
 
     def rel_pos(self, p_width, p_height, p_orientation, p_pos):
         if p_orientation == "l":
@@ -150,17 +164,18 @@ class CrouchPunch(Punch):
             return Vector((p_pos.x + p_width / 2, p_pos.y - p_height - (self.height-25/2)))
 
 class CrouchKick(Kick):
-    def __init__(self, _player):
-        super().__init__(_player)
+    def __init__(self, _player, _server=False, _socket=None):
+        super().__init__(_player, _server, _socket)
         self.height = 7
         self.damage = 1
         self.knock_back = Vector((50, 0))
         self.stun = 1
         self.player_knock_back = Vector((-5, 0))
+        self.type = "crouch_kick"
 
 class FlightPunch(Punch):
-    def __init__(self, _player):
-        super().__init__(_player)
+    def __init__(self, _player, _server=False, _socket=None):
+        super().__init__(_player, _server, _socket)
         self.height = 35
         self.width = 35
         self.damage = 4
@@ -169,6 +184,7 @@ class FlightPunch(Punch):
         self.stun = 0.3
         self.reload = 0.1
         self.recovery_time = 0.1
+        self.type = "flight_punch"
 
     def rel_pos(self, p_width, p_height, p_orientation, p_pos):
         if p_orientation == "l":
@@ -177,8 +193,8 @@ class FlightPunch(Punch):
             return Vector((p_pos.x+p_width/2, p_pos.y - p_height - 5))
 
 class FlightKick(Kick):
-    def __init__(self, _player):
-        super().__init__(_player)
+    def __init__(self, _player, _server=False, _socket=None):
+        super().__init__(_player, _server, _socket)
         self.height = 35
         self.width = 20
         self.damage = 8
@@ -187,6 +203,7 @@ class FlightKick(Kick):
         self.stun = 1.3
         self.recovery_time = 0.1
         self.reload = 0.5
+        self.type = "flight_kick"
 
     def rel_pos(self, p_width, p_height, p_orientation, p_pos):
         if p_orientation == "l":
