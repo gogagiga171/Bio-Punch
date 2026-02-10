@@ -74,7 +74,7 @@ def connect():
     global game_state, s, N
     game_state = "waiting for server"
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect((SERVER, 8000))
+    s.connect((SERVER_NOTE, 8000))
     th = threading.Thread(
         target=server_handler, args=(s,)
     )

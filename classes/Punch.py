@@ -65,7 +65,7 @@ class Punch:
                     enemy.health -= self.damage
                     enemy.reload_time = time.time() + self.stun
                     enemy.recovered_time = time.time() + self.stun
-                if not self.server:
+                if not self.server and self.socket:
                     data = {
                         "name": "punch",
                         "type": self.type
