@@ -172,10 +172,19 @@ class Player:
                         self.orientation = "l"
                         self.vel -= ground_vec * self.speed * delta * 10 * koef
                         state = "run"
-                    if inp["d"] and self.vel.x < self.speed:
+                        if self.vel.x > 0:
+                            state = "slide"
+                    elif inp["d"] and self.vel.x < self.speed:
                         self.orientation = "r"
                         self.vel += ground_vec * self.speed * delta * 10 * koef
                         state = "run"
+                        if self.vel.x < 0:
+                            state = "slide"
+                    else:
+                        if self.vel.x > 5:
+                            state = "slide"
+                        if self.vel.x < -5:
+                            state = "slide"
                 else:
                     if inp["a"] and self.vel.x > -self.speed:
                         self.orientation = "l"

@@ -54,12 +54,12 @@ def generate_animations(player):
     crouch_left_animation = Animation(crouch_left_animation_frames, True, 12)
 
     # Crouch punch right
-    crouch_punch_right_animation_frames = generate_frame_set_from_dir("resources/player/crouch_punch_r", default_offset, size, [None, None, player.crouch_punch.hit, None, None, player.reset_animation], player)
-    crouch_punch_right_animation = Animation(crouch_punch_right_animation_frames, False, 12)
+    crouch_punch_right_animation_frames = generate_frame_set_from_dir("resources/player/crouch_punch_r", default_offset, size, [None, None, None, None, None, None, None, player.crouch_punch.hit, None, None, None, None, player.reset_animation], player)
+    crouch_punch_right_animation = Animation(crouch_punch_right_animation_frames, False, 24)
 
     # Crouch punch left
-    crouch_punch_left_animation_frames = generate_frame_set_from_dir("resources/player/crouch_punch_l", default_offset, size, [None, None, player.crouch_punch.hit, None, None, player.reset_animation], player)
-    crouch_punch_left_animation = Animation(crouch_punch_left_animation_frames, False, 12)
+    crouch_punch_left_animation_frames = generate_frame_set_from_dir("resources/player/crouch_punch_l", default_offset, size, [None, None, None, None, None, None, None, player.crouch_punch.hit, None, None, None, None, player.reset_animation], player)
+    crouch_punch_left_animation = Animation(crouch_punch_left_animation_frames, False, 24)
 
     # Crouch kick right
     crouch_kick_right_animation_frames = generate_frame_set_from_dir("resources/player/crouch_kick_r", default_offset, size, [None, None, None, player.crouch_kick.hit, None, None, player.reset_animation], player)
@@ -101,6 +101,14 @@ def generate_animations(player):
     jump_kick_left_animation_frames = generate_frame_set_from_dir("resources/player/jump_kick_l", default_offset, size, [None, None, None, None, None, None, None, player.flight_kick.hit, None, None, player.reset_animation], player)
     jump_kick_left_animation = Animation(jump_kick_left_animation_frames, False, 24)
 
+    # Slide right
+    slide_right_animation_frames = generate_frame_set_from_dir("resources/player/slide_r", default_offset, size, [None], player)
+    slide_right_animation = Animation(slide_right_animation_frames, True, 12)
+
+    # Slide left
+    slide_left_animation_frames = generate_frame_set_from_dir("resources/player/slide_l", default_offset, size, [None], player)
+    slide_left_animation = Animation(slide_left_animation_frames, True, 12)
+
     animations_set = {
         "idle_right": idle_right_animation,
         "idle_left": idle_left_animation,
@@ -123,7 +131,9 @@ def generate_animations(player):
         "jump_punch_right": jump_punch_right_animation,
         "jump_punch_left": jump_punch_left_animation,
         "jump_kick_right": jump_kick_right_animation,
-        "jump_kick_left": jump_kick_left_animation
+        "jump_kick_left": jump_kick_left_animation,
+        "slide_right": slide_right_animation,
+        "slide_left": slide_left_animation
     }
 
     return animations_set
