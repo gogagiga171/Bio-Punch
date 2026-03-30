@@ -2,6 +2,9 @@ from classes.Line import Line
 import pygame
 
 class Obstacle:
+    Lines: list
+    dots: list
+
     def __init__(self, dots):
         self.lines = [Line(dots[x], dots[x+1]) for x in range(len(dots)-1)]
         self.lines.append(Line(dots[0], dots[-1]))

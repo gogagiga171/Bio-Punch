@@ -2,6 +2,13 @@ from classes.Vector import Vector
 import pygame
 
 class Button:
+    pos: Vector
+    width: float
+    height: float
+    text: str
+    color: tuple[int, int, int]
+    outline_color: tuple[int, int, int]
+    rect: pygame.Rect
 
     def __init__(self, _pos: Vector, _width: int, _height: int, _text: str, _color=(255, 255, 255), _outline_color=(150, 150, 150)):
         self.pos = _pos

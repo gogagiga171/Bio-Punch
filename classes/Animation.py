@@ -4,6 +4,13 @@ import time
 import pygame
 
 class Animation:
+    animation: list
+    looped: bool
+    start_time: float
+    fps: float
+    frame: int
+    time_rem: float
+
     def __init__(self, _animation:list[AnimationFrame], _looped:bool, _fps = 12):
         self.animation = _animation
         self.looped = _looped

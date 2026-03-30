@@ -1,6 +1,9 @@
 from classes.Vector import Vector
 
 class Line:
+    a: Vector
+    b: Vector
+
     def __init__(self, a, b):
         if a.x <= b.x:
             self.a = Vector(a)

@@ -2,9 +2,17 @@ from collections.abc import Callable
 from os import PathLike
 import pygame
 from classes.Vector import Vector
+from classes.Player import Player
 
 class AnimationFrame:
-    def __init__(self, _file_path:PathLike, _offset:Vector, size:float, _code:Callable or None, _player):
+    image: pygame.Surface
+    w: float
+    h: float
+    offset: Vector
+    code: Callable | None
+    player: Player
+
+    def __init__(self, _file_path:PathLike, _offset:Vector, size:float, _code:Callable | None, _player: Player):
         self.image = pygame.image.load(_file_path).convert_alpha()
         w, h = self.image.get_size()
         self.image = pygame.transform.scale(self.image, (int(w * size), int(h *size)))
