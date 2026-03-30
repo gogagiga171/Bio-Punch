@@ -1,6 +1,9 @@
 import math
 
 class Vector:
+    x: float
+    y: float
+
     def __init__(self, _v):
         self.x = _v[0]
         self.y = _v[1]
