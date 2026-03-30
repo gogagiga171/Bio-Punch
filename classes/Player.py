@@ -1,13 +1,44 @@
+from __future__ import annotations
 from classes.Vector import Vector
 from classes.Punch import Punch, Kick, CrouchPunch, CrouchKick, FlightPunch, FlightKick
 from classes.Line import Line
 from classes.Block import Block
+from classes.Animation import Animation
 from settings import WIDTH, HEIGHT
 from animations import generate_animations
 import pygame
 import time
 
 class Player:
+    health: float
+    maxHealth: float
+    width: float
+    height: float
+    normal_height: float
+    crouch_height: float
+    speed: float
+    crouch_speed_koef: float
+    jump: float
+    vel: Vector
+    pos: Vector
+    on_ground: bool
+    ground_normal: Vector
+    ground_line: Line | None
+    orientation: str
+    punch: Punch
+    kick: Kick
+    crouch_punch: CrouchPunch
+    crouch_kick: CrouchKick
+    flight_punch: FlightPunch
+    flight_kick: FlightKick
+    block: Block
+    reload_time: float
+    recovered_time: float
+    crouch: bool
+    animation_set: dict
+    current_animation: Animation | None
+    enemy: Player | None
+
     def __init__(self, _x, _y, _orientation, _socket=False): #warn поменять в PlyerServerSide тоже при изменении этого
         self.health = 100
         self.maxHealth = 100
