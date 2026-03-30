@@ -1,9 +1,25 @@
+from classes.Player import Player
 from classes.Vector import Vector
 import time
 import pygame
 import json
+from socket import SocketIO
 
 class Punch:
+    width: float
+    height: float
+    damage: float
+    player: Player
+    enemy_knock_back: Vector
+    player_knock_back: Vector
+    reload: float
+    recovery_time: float
+    stun: float
+    server: bool
+    type: str
+    socket: SocketIO
+    real_player: bool
+
     def __init__(self, _player, _server=False, _socket=None, _real_player = True):
         self.width = 20
         self.height = 10
