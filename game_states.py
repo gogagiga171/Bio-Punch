@@ -23,10 +23,10 @@ def menu(start_button, running, connect, screen):
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.MOUSEBUTTONUP:
-            m_pos = Vector(pygame.mouse.get_pos())
-            if start_button.check_in_button(m_pos):
+            if start_button.hovered:
                 threading.Thread(target=connect).start()
-
+    m_pos = Vector(pygame.mouse.get_pos())
+    start_button.check_in_button(m_pos)
     start_button.draw(screen=screen)
     return running
 
@@ -102,16 +102,28 @@ def game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N):
 
     return running, pl1_inp, pl2_inp, game_state, looser
 
-def card_choosing(screen, cards_list, player1, player2, N, loser, running, WIDTH, HEIGHT):
+def card_choosing(screen, cards_list, player1, player2, N, loser, running, WIDTH, HEIGHT, card_button_1, card_button_2, card_button_3):
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        if event.type == pygame.MOUSEBUTTONUP:
+            if card_button_1.hovered:
+                pass
+            if card_button_2.hovered:
+                pass
+            if card_button_3.hovered:
+                pass
+
+    m_pos = Vector(pygame.mouse.get_pos())
+    card_button_1.check_in_button(m_pos)
+    card_button_2.check_in_button(m_pos)
+    card_button_3.check_in_button(m_pos)
 
     for i in range(3):
         spl = (WIDTH - 600) / 4
         x = spl*(i+1) + 200*i
         y = 40
-        pygame.draw.rect(screen, (200, 200, 200), (x-spl/3, 25, 200 + 2*spl/3, 500))
+        pygame.draw.rect(screen, (0, 195, 255), (x-spl/3, 25, 200 + 2*spl/3, 500))
         pygame.draw.rect(screen, (255, 255, 255), (x-10, 255, 220 , 50))
         pygame.draw.rect(screen, (255, 255, 255), (x-10, 310, 220, 50))
         pygame.draw.rect(screen, (255, 255, 255), (x-10, 365, 220, 100))
@@ -121,6 +133,9 @@ def card_choosing(screen, cards_list, player1, player2, N, loser, running, WIDTH
         font_size = 20
         title_font = pygame.font.Font(None, title_font_size)
         font = pygame.font.Font(None, font_size)
+        card_button_1.draw(screen)
+        card_button_2.draw(screen)
+        card_button_3.draw(screen)
         auto_lining(cards_list[i].title, title_font, 20, x-5, 260, screen)
         auto_lining(cards_list[i].comment, font, 30, x-5, 315, screen)
         auto_lining(cards_list[i].description, font, 30, x-5, 370, screen)

@@ -14,6 +14,10 @@ from cards_randomizer import load_cards
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 start_button = Button(Vector((200, 400)), 400, 100, "start game") #todo изменить магические числа
+y = 470
+card_button_1 = Button(Vector((50, y)), 200, 50, "choose", _hovered_color=(255, 136, 0), _outline_width=6)
+card_button_2 = Button(Vector((300, y)), 200, 50, "choose", _hovered_color=(255, 136, 0), _outline_width=6)
+card_button_3 = Button(Vector((550, y)), 200, 50, "choose", _hovered_color=(255, 136, 0), _outline_width=6)
 clock = pygame.time.Clock()
 fps = 60
 running = True
@@ -93,7 +97,7 @@ while running:
     elif game_state=="game":
         running, pl1_inp, pl2_inp, game_state, loser = game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N)
     elif game_state=="card_choosing" and len(cards_list) != 0:
-        running = card_choosing(screen, cards_list, player1, player2, N, loser, running, WIDTH, HEIGHT) #todo
+        running = card_choosing(screen, cards_list, player1, player2, N, loser, running, WIDTH, HEIGHT, card_button_1, card_button_2, card_button_3) #todo
     else:
         running = loading(game_state, HEIGHT, WIDTH, screen, running)
 
