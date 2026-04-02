@@ -3,6 +3,6 @@ from classes.Vector import Vector
 GRAVITY = Vector((0, 1000))
 MESSAGE_DELTA = 1/20
 SERVER = "192.168.11.183"
-SERVER_NOTE = "10.192.222.84"
+SERVER_NOTE = "192.168.11.198"
 WIDTH = 800
 HEIGHT = 600
