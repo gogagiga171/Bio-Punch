@@ -4,6 +4,20 @@ import threading
 from classes.Vector import Vector
 from settings import GRAVITY
 
+def auto_lining(text, font, width, x, y, screen):
+    splited = text.split()
+    texts = [splited[0]]
+
+    for i in splited[1:]:
+        if len(texts[-1]) + len(i) < width:
+            texts[-1] += " " + i
+        else:
+            texts.append(i)
+
+    for i, line in enumerate(texts):
+        surface = font.render(line, True, (0, 0, 0))
+        screen.blit(surface, (x, y + i * font.get_height()))
+
 def menu(start_button, running, connect, screen):
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -96,14 +110,20 @@ def card_choosing(screen, cards_list, player1, player2, N, loser, running, WIDTH
     for i in range(3):
         spl = (WIDTH - 600) / 4
         x = spl*(i+1) + 200*i
-        y = 50
+        y = 40
         pygame.draw.rect(screen, (200, 200, 200), (x-spl/3, 25, 200 + 2*spl/3, 500))
+        pygame.draw.rect(screen, (255, 255, 255), (x-10, 255, 220 , 50))
+        pygame.draw.rect(screen, (255, 255, 255), (x-10, 310, 220, 50))
+        pygame.draw.rect(screen, (255, 255, 255), (x-10, 365, 220, 100))
+        pygame.draw.rect(screen, (255, 255, 255), (x, y, 200, 200))
         screen.blit(cards_list[i].image, (x, y))
         title_font_size = 30
         font_size = 20
         title_font = pygame.font.Font(None, title_font_size)
-        title_font.set_bold(True)
         font = pygame.font.Font(None, font_size)
+        auto_lining(cards_list[i].title, title_font, 20, x-5, 260, screen)
+        auto_lining(cards_list[i].comment, font, 30, x-5, 315, screen)
+        auto_lining(cards_list[i].description, font, 30, x-5, 370, screen)
 
     if N == loser:
         text = "Твой выбор"
