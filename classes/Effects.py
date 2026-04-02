@@ -17,7 +17,7 @@ class Effect:
 
 class Poison(Effect):
     duration = 3
-    damage = 5
+    damage = 10
     last_damage: float
     reload = 1
 

@@ -52,7 +52,7 @@ class Punch:
     def check_reload(self, player):
         return time.time() > player.reload_time
 
-    def hit(self, offset=Vector((0, 0))):
+    def hit(self, effects: list, offset=Vector((0, 0))):
         if self.real_player:
             player = self.player
             enemy = self.player.enemy
@@ -81,6 +81,8 @@ class Punch:
                     enemy.health -= self.damage
                     enemy.reload_time = time.time() + self.stun
                     enemy.recovered_time = time.time() + self.stun
+                    for effect in effects:
+                        enemy.effects.append(effect())
                 if not self.server and self.socket:
                     data = {
                         "name": "punch",
@@ -90,7 +92,7 @@ class Punch:
                 return True
             return False
 
-    def server_hit(self, player, enemy, ping):
+    def server_hit(self, player, enemy, ping, effects):
         offset = -player.vel * ping
         if player.vel.x > 100:
             player.vel.x += -100
@@ -118,6 +120,8 @@ class Punch:
                     enemy.health -= self.damage
                     enemy.reload_time = time.time() + self.stun
                     enemy.recovered_time = time.time() + self.stun
+                    for effect in effects:
+                        enemy.effects.append(effect())
                 return True
         return False
 

@@ -38,6 +38,9 @@ class Player:
     animation_set: dict
     current_animation: Animation | None
     enemy: Player | None
+    punch_effects: list
+    effects: list
+    upgrades: list
 
     def __init__(self, _x, _y, _orientation, _socket=False): #warn поменять в PlyerServerSide тоже при изменении этого
         self.health = 100
@@ -69,6 +72,8 @@ class Player:
         self.current_animation = None
         self.set_animation("idle")
         self.enemy = None
+        self.punch_effects = []
+        self.effects = []
 
     def update_sockets(self, _socket):
         self.punch.socket = _socket
@@ -264,20 +269,26 @@ class Player:
                         self.crouch = True
         if inp["o"]:
             if not self.on_ground:
-                self.call_hit(self.flight_punch, "punch")
+                self.start_hit(self.flight_punch, "punch")
             elif self.crouch:
-                self.call_hit(self.crouch_punch, "punch")
+                self.start_hit(self.crouch_punch, "punch")
             else:
-                self.call_hit(self.punch, "punch")
+                self.start_hit(self.punch, "punch")
         if inp["l"]:
             if not self.on_ground:
-                self.call_hit(self.flight_kick, "kick")
+                self.start_hit(self.flight_kick, "kick")
             elif self.crouch:
-                self.call_hit(self.crouch_kick, "kick")
+                self.start_hit(self.crouch_kick, "kick")
             else:
-                self.call_hit(self.kick, "kick")
+                self.start_hit(self.kick, "kick")
 
-    def call_hit(self, punch_type, punch_type_str): #warn поменять в PlyerServerSide тоже при изменении этого
+        for effect in self.effects:
+            effect.process()
+
+        for upgrade in self.upgrades:
+            upgrade.logic()
+
+    def start_hit(self, punch_type, punch_type_str): #warn поменять в PlyerServerSide тоже при изменении этого
         if self.vel.x > 100:
             self.vel.x += -100
         if self.vel.x < -100:
@@ -290,6 +301,9 @@ class Player:
             elif self.crouch:
                 punch_type_str = "crouch_"+punch_type_str
             self.set_animation(punch_type_str)
+
+    def call_hit(self, punch_type):
+        punch_type.hit(self.punch_effects)
 
     def convert_quick_dict(self):
         d = {
@@ -487,20 +501,20 @@ class ServerSidePlayer(Player):
                         self.crouch = True
         if inp["o"]:
             if not self.on_ground:
-                self.call_hit(self.flight_punch, "punch")
+                self.start_hit(self.flight_punch, "punch")
             elif self.crouch:
-                self.call_hit(self.crouch_punch, "punch")
+                self.start_hit(self.crouch_punch, "punch")
             else:
-                self.call_hit(self.punch, "punch")
+                self.start_hit(self.punch, "punch")
         if inp["l"]:
             if not self.on_ground:
-                self.call_hit(self.flight_kick, "kick")
+                self.start_hit(self.flight_kick, "kick")
             elif self.crouch:
-                self.call_hit(self.crouch_kick, "kick")
+                self.start_hit(self.crouch_kick, "kick")
             else:
-                self.call_hit(self.kick, "kick")
+                self.start_hit(self.kick, "kick")
 
-    def call_hit(self, punch_type, punch_type_str):
+    def start_hit(self, punch_type, punch_type_str):
         if self.vel.x > 100:
             self.vel.x += -100
         if self.vel.x < -100:
