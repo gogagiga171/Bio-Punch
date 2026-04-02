@@ -6,6 +6,7 @@ import threading
 from map import load_map
 from settings import MESSAGE_DELTA, GRAVITY
 from classes.Player import ServerSidePlayer
+from cards_randomizer import get_cards
 
 pl1_inp = {"a":False, "d":False, "w":False, "i": False, "k":False, "o":False, "l":False}
 pl2_inp = {"a":False, "d":False, "w":False, "i": False, "k":False, "o":False, "l":False}
@@ -164,5 +165,12 @@ while True:
         start = time.time()
 
     if player1.health <= 0 or player2.health <= 0:
-        player1, player2, map = load_map(player1, player2)
-        send_info(conn1, conn2, player1, player2, pl1_inp, pl2_inp, health=True)
+        cards = get_cards()
+        data = {
+            "name": "cards_list",
+            "cards": cards
+        }
+        conn1.send(json.dumps(data).encode("utf-8") + b"\n")
+        conn2.send(json.dumps(data).encode("utf-8") + b"\n")
+        while True:
+            pass

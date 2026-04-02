@@ -1,12 +1,14 @@
 import time
-from Player import Player
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from classes.Player import Player
 
 class Effect:
     duration: float
     start: float
-    player: Player
+    player: "Player"
 
-    def __init__(self, player: Player):
+    def __init__(self, player: "Player"):
         self.player = player
         self.start = time.time()
 
@@ -22,7 +24,7 @@ class Poison(Effect):
     reload = 1
 
 
-    def __init__(self, player: Player):
+    def __init__(self, player: "Player"):
         self.last_damage = time.time()
         super().__init__(player)
 

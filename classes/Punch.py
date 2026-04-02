@@ -1,4 +1,6 @@
-from classes.Player import Player
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from classes.Player import Player
 from classes.Vector import Vector
 import time
 import pygame
@@ -9,7 +11,7 @@ class Punch:
     width: float
     height: float
     damage: float
-    player: Player
+    player: "Player"
     enemy_knock_back: Vector
     player_knock_back: Vector
     reload: float

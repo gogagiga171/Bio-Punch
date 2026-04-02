@@ -76,4 +76,44 @@ def game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N):
     for obs in map:
         obs.draw(screen)
 
-    return running, pl1_inp, pl2_inp
+    if player1.health <= 0:
+        game_state = "card_choosing"
+        looser = 1
+    elif player2.health <= 0:
+        game_state = "card_choosing"
+        looser = 2
+    else:
+        game_state = "game"
+        looser = None
+
+    return running, pl1_inp, pl2_inp, game_state, looser
+
+def card_choosing(screen, cards_list, player1, player2, N, loser, running, WIDTH, HEIGHT):
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    for i in range(3):
+        spl = (WIDTH - 600) / 4
+        x = spl*(i+1) + 200*i
+        y = 50
+        pygame.draw.rect(screen, (200, 200, 200), (x-spl/3, 25, 200 + 2*spl/3, 500))
+        screen.blit(cards_list[i].image, (x, y))
+        title_font_size = 30
+        font_size = 20
+        title_font = pygame.font.Font(None, title_font_size)
+        title_font.set_bold(True)
+        font = pygame.font.Font(None, font_size)
+
+    if N == loser:
+        text = "Твой выбор"
+    else:
+        text = "Выбор противника"
+
+    font_size = 50
+    font = pygame.font.Font(None, font_size)
+    text_surface = font.render(text, True, (0, 0, 0))
+    text_rect = text_surface.get_rect(center=(WIDTH / 2, 550))
+    screen.blit(text_surface, text_rect)
+
+    return running

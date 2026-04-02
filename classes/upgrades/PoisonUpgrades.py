@@ -3,6 +3,7 @@ from classes.upgrades.Upgrade import Upgrade
 from classes.Effects import Poison
 
 class UPoisonPunch(Upgrade):
+    image_name = "UPoisonPunch.png"
     title = "Отравленый удар"
     description = "При ударе накладывает отравление. Дамаг от удара x0.5"
     comment = "Неприятный тип"
@@ -19,6 +20,7 @@ class UPoisonPunch(Upgrade):
         Player.flight_kick.damage *= self.damage_multiplier
 
 class UDisease(Upgrade):
+    image_name = "UDisease.png"
     title = "Коронавирус"
     description = "При ударе накладывает отравление. ХП x0.5"
     comment = "контрится медицинской маской"

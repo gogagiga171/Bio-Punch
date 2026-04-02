@@ -2,6 +2,7 @@ from classes.Player import Player
 from classes.upgrades.Upgrade import Upgrade
 
 class UBig(Upgrade):
+    image_name = "UBig.png"
     title = "танк"
     size_multiplier = 1.5
     speed_multiplier = 0.7
@@ -18,6 +19,7 @@ class UBig(Upgrade):
             player.animation_set[i].resize(self.size_multiplier)
 
 class USmall(Upgrade):
+    image_name = "USmall.png"
     title = "мал да удал"
     size_multiplier = 0.8
     speed_multiplier = 3

@@ -2,7 +2,9 @@ from collections.abc import Callable
 from os import PathLike
 import pygame
 from classes.Vector import Vector
-from classes.Player import Player
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from classes.Player import Player
 
 class AnimationFrame:
     image: pygame.Surface
@@ -10,12 +12,12 @@ class AnimationFrame:
     h: float
     offset: Vector
     code: Callable | None
-    player: Player
+    player: "Player"
 
-    def __init__(self, _file_path:PathLike, _offset:Vector, size:float, _code:Callable | None, _player: Player):
+    def __init__(self, _file_path:PathLike, _offset:Vector, size:float, _code:Callable | None, _player: "Player"):
         self.image = pygame.image.load(_file_path).convert_alpha()
         w, h = self.image.get_size()
-        self.image = pygame.transform.scale(self.image, (int(w * size), int(h *size)))
+        self.image = pygame.transform.scale(self.image, (int(w * size), int(h * size)))
         self.offset = _offset
         self.code = _code
         self.player = _player

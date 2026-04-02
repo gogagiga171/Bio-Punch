@@ -36,7 +36,7 @@ class Player:
     recovered_time: float
     crouch: bool
     animation_set: dict
-    current_animation: Animation | None
+    current_animation: str | None
     enemy: Player | None
     punch_effects: list
     effects: list
@@ -74,6 +74,7 @@ class Player:
         self.enemy = None
         self.punch_effects = []
         self.effects = []
+        self.upgrades = []
 
     def update_sockets(self, _socket):
         self.punch.socket = _socket
@@ -302,7 +303,20 @@ class Player:
                 punch_type_str = "crouch_"+punch_type_str
             self.set_animation(punch_type_str)
 
-    def call_hit(self, punch_type):
+    def call_hit(self):
+        type_str = self.current_animation[:self.current_animation.rfind("_")]
+        if type_str == "punch":
+            punch_type = self.punch
+        elif type_str == "kick":
+            punch_type = self.kick
+        elif type_str == "crouch_punch":
+            punch_type = self.crouch_punch
+        elif type_str == "crouch_kick":
+            punch_type = self.crouch_kick
+        elif type_str == "jump_punch":
+            punch_type = self.flight_punch
+        elif type_str == "jump_kick":
+            punch_type = self.flight_kick
         punch_type.hit(self.punch_effects)
 
     def convert_quick_dict(self):
@@ -421,6 +435,9 @@ class ServerSidePlayer(Player):
         self.recovered_time = time.time()
         self.crouch = False
         self.enemy = None
+        self.punch_effects = []
+        self.effects = []
+        self.upgrades = []
 
     def reset_animation(self):
         raise NotImplementedError
