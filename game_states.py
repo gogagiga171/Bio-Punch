@@ -102,11 +102,11 @@ def game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N):
 
     return running, pl1_inp, pl2_inp, game_state, looser
 
-def card_choosing(screen, cards_list, player1, player2, N, loser, running, WIDTH, HEIGHT, card_button_1, card_button_2, card_button_3):
+def card_choosing(screen, s, cards_list, player1, player2, N, loser, running, WIDTH, HEIGHT, card_button_1, card_button_2, card_button_3, hovered_button):
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        if event.type == pygame.MOUSEBUTTONUP:
+        if event.type == pygame.MOUSEBUTTONUP and N == loser:
             if card_button_1.hovered:
                 pass
             if card_button_2.hovered:
@@ -115,9 +115,52 @@ def card_choosing(screen, cards_list, player1, player2, N, loser, running, WIDTH
                 pass
 
     m_pos = Vector(pygame.mouse.get_pos())
-    card_button_1.check_in_button(m_pos)
-    card_button_2.check_in_button(m_pos)
-    card_button_3.check_in_button(m_pos)
+    if N == loser:
+        card_button_1.check_in_button(m_pos)
+        card_button_2.check_in_button(m_pos)
+        card_button_3.check_in_button(m_pos)
+        if card_button_1.hovered:
+            if hovered_button != 1:
+                hovered_button = 1
+                data = {
+                    "name": "hovered_button_changed",
+                    "hovered_button": hovered_button
+                }
+                s.send(json.dumps(data).encode("utf-8") + b"\n")
+        elif card_button_2.hovered:
+            if hovered_button != 2:
+                hovered_button = 2
+                data = {
+                    "name": "hovered_button_changed",
+                    "hovered_button": hovered_button
+                }
+                s.send(json.dumps(data).encode("utf-8") + b"\n")
+        elif card_button_3.hovered:
+            if hovered_button != 3:
+                hovered_button = 3
+                data = {
+                    "name": "hovered_button_changed",
+                    "hovered_button": hovered_button
+                }
+                s.send(json.dumps(data).encode("utf-8") + b"\n")
+        else:
+            if hovered_button != 0:
+                hovered_button = 0
+                data = {
+                    "name": "hovered_button_changed",
+                    "hovered_button": hovered_button
+                }
+                s.send(json.dumps(data).encode("utf-8") + b"\n")
+    else:
+        card_button_1.hovered = False
+        card_button_2.hovered = False
+        card_button_3.hovered = False
+        if hovered_button == 1:
+            card_button_1.hovered = True
+        if hovered_button == 2:
+            card_button_2.hovered = True
+        if hovered_button == 3:
+            card_button_3.hovered = True
 
     for i in range(3):
         spl = (WIDTH - 600) / 4
@@ -151,4 +194,4 @@ def card_choosing(screen, cards_list, player1, player2, N, loser, running, WIDTH
     text_rect = text_surface.get_rect(center=(WIDTH / 2, 550))
     screen.blit(text_surface, text_rect)
 
-    return running
+    return running, hovered_button

@@ -111,6 +111,8 @@ def client_handler(p1, p2, cl, conn, enemy_conn, addr):
                         if cl == 2:
                             pl2_ping = time.time()-pl2_ping_timer_start
                             pl2_ping_fetched = True
+                    if data["name"] == "hovered_button_changed":
+                        enemy_conn.send(json.dumps(data).encode("utf-8") + b"\n")
 
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

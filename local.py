@@ -23,6 +23,7 @@ fps = 60
 running = True
 cards_list = []
 loser = None
+hovered_button = 0
 
 pl1_inp = {"a":False, "d":False, "w":False, "i":False, "k":False, "o":False, "l":False}
 pl2_inp = {"a":False, "d":False, "w":False, "i":False, "k":False, "o":False, "l":False}
@@ -38,7 +39,7 @@ s=0
 N=0
 
 def server_handler(s):
-    global player1, player2, pl1_inp, pl2_inp, game_state, N, cards_list
+    global player1, player2, pl1_inp, pl2_inp, game_state, N, cards_list, hovered_button
     buffer = ""
     while True:
         chunk = s.recv(1024).decode("utf-8")
@@ -77,12 +78,14 @@ def server_handler(s):
                     s.send(json.dumps({"name":"ping"}).encode("utf-8")+b"\n")
                 elif data["name"] == "cards_list":
                     cards_list = load_cards(data["cards"])
+                elif data["name"] == "hovered_button_changed":
+                    hovered_button = data["hovered_button"]
 
 def connect():
     global game_state, s, N
     game_state = "waiting for server"
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect((SERVER_NOTE, 8000))
+    s.connect((SERVER, 8000))
     th = threading.Thread(
         target=server_handler, args=(s,)
     )
@@ -97,7 +100,7 @@ while running:
     elif game_state=="game":
         running, pl1_inp, pl2_inp, game_state, loser = game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N)
     elif game_state=="card_choosing" and len(cards_list) != 0:
-        running = card_choosing(screen, cards_list, player1, player2, N, loser, running, WIDTH, HEIGHT, card_button_1, card_button_2, card_button_3) #todo
+        running, hovered_button = card_choosing(screen, s, cards_list, player1, player2, N, loser, running, WIDTH, HEIGHT, card_button_1, card_button_2, card_button_3, hovered_button) #todo
     else:
         running = loading(game_state, HEIGHT, WIDTH, screen, running)
 
