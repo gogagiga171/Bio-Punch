@@ -17,6 +17,7 @@ pl2_ping_fetched = False
 pl1_ping_timer_start = 0
 pl2_ping_timer_start = 0
 cards = []
+choosing_card = False
 
 def send_info(conn1, conn2, player1, player2, pl1_inp, pl2_inp, health=False):
     data = {
@@ -52,7 +53,7 @@ def ping_sender(conn, pl):
 def client_handler(p1, p2, cl, conn, enemy_conn, addr):
     global pl1_inp, pl2_inp, player1, player2, map
     global pl1_ping, pl2_ping, pl1_ping_fetched, pl2_ping_fetched
-    global pl1_ping_timer_start, pl2_ping_timer_start
+    global pl1_ping_timer_start, pl2_ping_timer_start, choosing_card
     global cards
     while True:
         buffer = ""
@@ -125,7 +126,7 @@ def client_handler(p1, p2, cl, conn, enemy_conn, addr):
                             l_cards[data["choosen_card"]-1].when_applied(p2)
                             p2.upgrades.append(l_cards[data["choosen_card"]-1])
                         player1, player2, map = load_map(player1, player2)
-                        game_state = "game"
+                        choosing_card = False
 
 
 
@@ -188,5 +189,6 @@ while True:
         }
         conn1.send(json.dumps(data).encode("utf-8") + b"\n")
         conn2.send(json.dumps(data).encode("utf-8") + b"\n")
-        while True:
+        choosing_card = True
+        while choosing_card:
             pass
