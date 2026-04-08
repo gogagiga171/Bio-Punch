@@ -30,5 +30,5 @@ class Poison(Effect):
 
     def process(self):
         if time.time() - self.last_damage >= self.reload:
-            Player.health -= self.damage
+            self.player.health -= self.damage
         super().process()

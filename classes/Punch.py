@@ -84,7 +84,7 @@ class Punch:
                     enemy.reload_time = time.time() + self.stun
                     enemy.recovered_time = time.time() + self.stun
                     for effect in effects:
-                        enemy.effects.append(effect())
+                        enemy.effects.append(effect(enemy))
                 if not self.server and self.socket:
                     data = {
                         "name": "punch",
