@@ -120,46 +120,46 @@ def card_choosing(screen, s, cards_list, player1, player2, N, loser, running, WI
         card_button_2.check_in_button(m_pos)
         card_button_3.check_in_button(m_pos)
         if card_button_1.hovered:
-            if hovered_button != 1:
-                hovered_button = 1
+            if hovered_button.a != 1:
+                hovered_button.a = 1
                 data = {
                     "name": "hovered_button_changed",
-                    "hovered_button": hovered_button
+                    "hovered_button": hovered_button.a
                 }
                 s.send(json.dumps(data).encode("utf-8") + b"\n")
         elif card_button_2.hovered:
-            if hovered_button != 2:
-                hovered_button = 2
+            if hovered_button.a != 2:
+                hovered_button.a = 2
                 data = {
                     "name": "hovered_button_changed",
-                    "hovered_button": hovered_button
+                    "hovered_button": hovered_button.a
                 }
                 s.send(json.dumps(data).encode("utf-8") + b"\n")
         elif card_button_3.hovered:
-            if hovered_button != 3:
-                hovered_button = 3
+            if hovered_button.a != 3:
+                hovered_button.a = 3
                 data = {
                     "name": "hovered_button_changed",
-                    "hovered_button": hovered_button
+                    "hovered_button": hovered_button.a
                 }
                 s.send(json.dumps(data).encode("utf-8") + b"\n")
         else:
-            if hovered_button != 0:
-                hovered_button = 0
+            if hovered_button.a != 0:
+                hovered_button.a = 0
                 data = {
                     "name": "hovered_button_changed",
-                    "hovered_button": hovered_button
+                    "hovered_button": hovered_button.a
                 }
                 s.send(json.dumps(data).encode("utf-8") + b"\n")
     else:
         card_button_1.hovered = False
         card_button_2.hovered = False
         card_button_3.hovered = False
-        if hovered_button == 1:
+        if hovered_button.a == 1:
             card_button_1.hovered = True
-        if hovered_button == 2:
+        if hovered_button.a == 2:
             card_button_2.hovered = True
-        if hovered_button == 3:
+        if hovered_button.a == 3:
             card_button_3.hovered = True
 
     for i in range(3):

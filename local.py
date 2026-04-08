@@ -11,6 +11,9 @@ import socket
 from game_states import game, loading, menu, card_choosing
 from cards_randomizer import load_cards
 
+class HoveredButton:
+    a = 0
+
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 start_button = Button(Vector((200, 400)), 400, 100, "start game") #todo изменить магические числа
@@ -23,7 +26,7 @@ fps = 60
 running = True
 cards_list = []
 loser = None
-hovered_button = 0
+hovered_button = HoveredButton
 
 pl1_inp = {"a":False, "d":False, "w":False, "i":False, "k":False, "o":False, "l":False}
 pl2_inp = {"a":False, "d":False, "w":False, "i":False, "k":False, "o":False, "l":False}
@@ -79,13 +82,13 @@ def server_handler(s):
                 elif data["name"] == "cards_list":
                     cards_list = load_cards(data["cards"])
                 elif data["name"] == "hovered_button_changed":
-                    hovered_button = data["hovered_button"]
+                    hovered_button.a = data["hovered_button"]
 
 def connect():
     global game_state, s, N
     game_state = "waiting for server"
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect((SERVER, 8000))
+    s.connect((SERVER_NOTE, 8000))
     th = threading.Thread(
         target=server_handler, args=(s,)
     )
