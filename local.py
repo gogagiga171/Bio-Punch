@@ -42,7 +42,7 @@ s=0
 N=0
 
 def server_handler(s):
-    global player1, player2, pl1_inp, pl2_inp, game_state, N, cards_list, hovered_button
+    global player1, player2, pl1_inp, pl2_inp, game_state, N, cards_list, hovered_button, map
     buffer = ""
     while True:
         chunk = s.recv(1024).decode("utf-8")
@@ -83,6 +83,15 @@ def server_handler(s):
                     cards_list = load_cards(data["cards"])
                 elif data["name"] == "hovered_button_changed":
                     hovered_button.a = data["hovered_button"]
+                elif data["name"] == "choosen_card":
+                    if N == 1:
+                        cards_list[data["choosen_card"]-1].when_applied(player1)
+                        player1.upgrades.append(cards_list[data["choosen_card"]-1])
+                    if N == 2:
+                        cards_list[data["choosen_card"]-1].when_applied(player2)
+                        player2.upgrades.append(cards_list[data["choosen_card"]-1])
+                    player1, player2, map = load_map(player1, player2)
+                    game_state = "game"
 
 def connect():
     global game_state, s, N
@@ -103,7 +112,9 @@ while running:
     elif game_state=="game":
         running, pl1_inp, pl2_inp, game_state, loser = game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N)
     elif game_state=="card_choosing" and len(cards_list) != 0:
-        running, hovered_button = card_choosing(screen, s, cards_list, player1, player2, N, loser, running, WIDTH, HEIGHT, card_button_1, card_button_2, card_button_3, hovered_button) #todo
+        running, hovered_button, game_state, reload = card_choosing(screen, s, cards_list, player1, player2, N, loser, running, WIDTH, HEIGHT, card_button_1, card_button_2, card_button_3, hovered_button, game_state) #todo
+        if reload:
+            player1, player2, map = load_map(player1, player2)
     else:
         running = loading(game_state, HEIGHT, WIDTH, screen, running)
 

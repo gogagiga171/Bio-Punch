@@ -6,7 +6,7 @@ import threading
 from map import load_map
 from settings import MESSAGE_DELTA, GRAVITY
 from classes.Player import ServerSidePlayer
-from cards_randomizer import get_cards
+from cards_randomizer import get_cards, load_server_cards
 
 pl1_inp = {"a":False, "d":False, "w":False, "i": False, "k":False, "o":False, "l":False}
 pl2_inp = {"a":False, "d":False, "w":False, "i": False, "k":False, "o":False, "l":False}
@@ -16,6 +16,7 @@ pl1_ping_fetched = False
 pl2_ping_fetched = False
 pl1_ping_timer_start = 0
 pl2_ping_timer_start = 0
+cards = []
 
 def send_info(conn1, conn2, player1, player2, pl1_inp, pl2_inp, health=False):
     data = {
@@ -49,9 +50,10 @@ def ping_sender(conn, pl):
             time.sleep(2)
 
 def client_handler(p1, p2, cl, conn, enemy_conn, addr):
-    global pl1_inp, pl2_inp, player1, player2
+    global pl1_inp, pl2_inp, player1, player2, map
     global pl1_ping, pl2_ping, pl1_ping_fetched, pl2_ping_fetched
     global pl1_ping_timer_start, pl2_ping_timer_start
+    global cards
     while True:
         buffer = ""
         while True:
@@ -113,6 +115,18 @@ def client_handler(p1, p2, cl, conn, enemy_conn, addr):
                             pl2_ping_fetched = True
                     if data["name"] == "hovered_button_changed":
                         enemy_conn.send(json.dumps(data).encode("utf-8") + b"\n")
+                    if data["name"] == "choosen_card":
+                        enemy_conn.send(json.dumps(data).encode("utf-8") + b"\n")
+                        l_cards = load_server_cards(cards)
+                        if cl == 1:
+                            l_cards[data["choosen_card"]-1].when_applied(p1)
+                            p1.upgrades.append(l_cards[data["choosen_card"]-1])
+                        elif cl == 2:
+                            l_cards[data["choosen_card"]-1].when_applied(p2)
+                            p2.upgrades.append(l_cards[data["choosen_card"]-1])
+                        player1, player2, map = load_map(player1, player2)
+                        game_state = "game"
+
 
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

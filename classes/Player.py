@@ -287,7 +287,7 @@ class Player:
             effect.process()
 
         for upgrade in self.upgrades:
-            upgrade.logic()
+            upgrade.logic(self)
 
     def start_hit(self, punch_type, punch_type_str): #warn поменять в PlyerServerSide тоже при изменении этого
         if self.vel.x > 100:

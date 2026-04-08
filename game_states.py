@@ -102,17 +102,55 @@ def game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N):
 
     return running, pl1_inp, pl2_inp, game_state, looser
 
-def card_choosing(screen, s, cards_list, player1, player2, N, loser, running, WIDTH, HEIGHT, card_button_1, card_button_2, card_button_3, hovered_button):
+def card_choosing(screen, s, cards_list, player1, player2, N, loser, running, WIDTH, HEIGHT, card_button_1, card_button_2, card_button_3, hovered_button, game_state):
+    reload = False
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.MOUSEBUTTONUP and N == loser:
             if card_button_1.hovered:
-                pass
+                reload = True
+                if N == 1:
+                    cards_list[0].when_applied(player1)
+                    player1.upgrades.append(cards_list[0])
+                else:
+                    cards_list[0].when_applied(player2)
+                    player2.upgrades.append(cards_list[0])
+                data = {
+                    "name": "choosen_card",
+                    "choosen_card": 1
+                }
+                s.send(json.dumps(data).encode("utf-8") + b"\n")
+                game_state = "game"
             if card_button_2.hovered:
-                pass
+                reload = True
+                if N == 1:
+                    cards_list[1].when_applied(player1)
+                    player1.upgrades.append(cards_list[1])
+                else:
+                    cards_list[1].when_applied(player2)
+                    player2.upgrades.append(cards_list[1])
+                data = {
+                    "name": "choosen_card",
+                    "choosen_card": 2
+                }
+                s.send(json.dumps(data).encode("utf-8") + b"\n")
+                game_state = "game"
             if card_button_3.hovered:
-                pass
+                reload = True
+                if N == 1:
+                    cards_list[2].when_applied(player1)
+                    player1.upgrades.append(cards_list[2])
+                else:
+                    cards_list[2].when_applied(player2)
+                    player2.upgrades.append(cards_list[2])
+                data = {
+                    "name": "choosen_card",
+                    "choosen_card": 3
+                }
+                s.send(json.dumps(data).encode("utf-8") + b"\n")
+                game_state = "game"
 
     m_pos = Vector(pygame.mouse.get_pos())
     if N == loser:
@@ -194,4 +232,4 @@ def card_choosing(screen, s, cards_list, player1, player2, N, loser, running, WI
     text_rect = text_surface.get_rect(center=(WIDTH / 2, 550))
     screen.blit(text_surface, text_rect)
 
-    return running, hovered_button
+    return running, hovered_button, game_state, reload

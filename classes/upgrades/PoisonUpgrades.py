@@ -1,6 +1,27 @@
 from classes.Player import Player
-from classes.upgrades.Upgrade import Upgrade
+from classes.upgrades.Upgrade import Upgrade, ServerUpgrade
 from classes.Effects import Poison
+
+class SUPoisonPunch(ServerUpgrade):
+    punch_effect = Poison
+    damage_multiplier = 0.5
+
+    def when_applied(self, player:Player):
+        player.punch_effects.append(self.punch_effect)
+        player.punch.damage *= self.damage_multiplier
+        player.kick.damage *= self.damage_multiplier
+        player.crouch_punch.damage *= self.damage_multiplier
+        player.crouch_kick.damage *= self.damage_multiplier
+        player.flight_punch.damage *= self.damage_multiplier
+        player.flight_kick.damage *= self.damage_multiplier
+
+class SUDisease(ServerUpgrade):
+    punch_effect = Poison
+    health_multiplier = 0.5
+
+    def when_applied(self, player:Player):
+        player.punch_effects.append(self.punch_effect)
+        player.maxHealth *= self.health_multiplier
 
 class UPoisonPunch(Upgrade):
     image_name = "UPoisonPunch.png"
@@ -11,13 +32,13 @@ class UPoisonPunch(Upgrade):
     damage_multiplier = 0.5
 
     def when_applied(self, player:Player):
-        Player.punch_effects.append(self.punch_effect)
-        Player.punch.damage *= self.damage_multiplier
-        Player.kick.damage *= self.damage_multiplier
-        Player.crouch_punch.damage *= self.damage_multiplier
-        Player.crouch_kick.damage *= self.damage_multiplier
-        Player.flight_punch.damage *= self.damage_multiplier
-        Player.flight_kick.damage *= self.damage_multiplier
+        player.punch_effects.append(self.punch_effect)
+        player.punch.damage *= self.damage_multiplier
+        player.kick.damage *= self.damage_multiplier
+        player.crouch_punch.damage *= self.damage_multiplier
+        player.crouch_kick.damage *= self.damage_multiplier
+        player.flight_punch.damage *= self.damage_multiplier
+        player.flight_kick.damage *= self.damage_multiplier
 
 class UDisease(Upgrade):
     image_name = "UDisease.png"
@@ -28,5 +49,5 @@ class UDisease(Upgrade):
     health_multiplier = 0.5
 
     def when_applied(self, player:Player):
-        Player.punch_effects.append(self.punch_effect)
-        Player.maxHealth *= self.health_multiplier
+        player.punch_effects.append(self.punch_effect)
+        player.maxHealth *= self.health_multiplier
