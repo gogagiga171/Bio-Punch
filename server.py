@@ -12,16 +12,19 @@ pl1_inp = {"a":False, "d":False, "w":False, "i": False, "k":False, "o":False, "l
 pl2_inp = {"a":False, "d":False, "w":False, "i": False, "k":False, "o":False, "l":False}
 cards = []
 choosing_card = False
+conn1 = conn2 = 0
 
-class PingManager:
+class dataManager:
     pl1_ping = 0
     pl2_ping = 0
     pl1_ping_fetched = False
     pl2_ping_fetched = False
     pl1_ping_timer_start = 0
     pl2_ping_timer_start = 0
+    pl1_connected = False
+    pl2_connected = False
 
-pm = PingManager
+dm = dataManager()
 
 def send_info(conn1, conn2, player1, player2, pl1_inp, pl2_inp, health=False):
     data = {
@@ -41,22 +44,51 @@ def send_info(conn1, conn2, player1, player2, pl1_inp, pl2_inp, health=False):
     conn2.send(data_bytes + b"\n")
 
 def ping_sender(conn, pl):
-    global pm
-    conn.send(json.dumps({"name":"ping"}).encode("utf-8")+b"\n")
-    if pl == 1:
-        pm.pl1_ping_timer_start = time.time()
-        pm.pl1_ping_fetched = False
-        while not pm.pl1_ping_fetched:
-            time.sleep(2)
-    if pl == 2:
-        pm.pl2_ping_timer_start = time.time()
-        pm.pl2_ping_fetched = False
-        while not pm.pl2_ping_fetched:
-            time.sleep(2)
+    global dm, conn1, conn2
+    while True:
+        conn.send(json.dumps({"name":"ping"}).encode("utf-8")+b"\n")
+        if pl == 1:
+            dm.pl1_ping_timer_start = time.time()
+            dm.pl1_ping_fetched = False
+            while not dm.pl1_ping_fetched:
+                time.sleep(2)
+                if time.time() - dm.pl1_ping_timer_start > 10 or not dm.pl1_connected:
+                    print("1 ping disconnected", time.time() - dm.pl1_ping_timer_start, dm.pl1_connected)
+                    if not dm.pl1_connected:
+                        data = {
+                            "name": "disconnect"
+                        }
+                        conn1.send(json.dumps(data).encode("utf-8") + b"\n")
+                    data = {
+                        "name": "enemy_disconnect"
+                    }
+                    conn2.send(json.dumps(data).encode("utf-8") + b"\n")
+                    dm.pl1_connected = False
+                    threading.Thread(target=connect_players).start()
+                    return
+        if pl == 2:
+            dm.pl2_ping_timer_start = time.time()
+            dm.pl2_ping_fetched = False
+            while not dm.pl2_ping_fetched:
+                time.sleep(2)
+                if time.time() - dm.pl2_ping_timer_start > 10 or not dm.pl2_connected:
+                    print("2 ping disconnected", time.time() - dm.pl2_ping_timer_start, dm.pl2_connected)
+                    if not dm.pl2_connected:
+                        data = {
+                            "name": "disconnect"
+                        }
+                        conn2.send(json.dumps(data).encode("utf-8") + b"\n")
+                    data = {
+                        "name": "enemy_disconnect"
+                    }
+                    conn1.send(json.dumps(data).encode("utf-8") + b"\n")
+                    dm.pl2_connected = False
+                    threading.Thread(target=connect_players).start()
+                    return
 
 def client_handler(p1, p2, cl, conn, enemy_conn, addr):
     global pl1_inp, pl2_inp, player1, player2, map
-    global pm, choosing_card
+    global dm, choosing_card
     global cards
     while True:
         buffer = ""
@@ -81,17 +113,17 @@ def client_handler(p1, p2, cl, conn, enemy_conn, addr):
                     if data["name"] == "punch":
                         if cl == 1:
                             if data["type"] == "punch":
-                                punched = player1.punch.hit(player1.punch_effects, player1.vel*pm.pl1_ping)
+                                punched = player1.punch.hit(player1.punch_effects, player1.vel*dm.pl1_ping)
                             if data["type"] == "kick":
-                                punched = player1.kick.hit(player1.punch_effects, player1.vel*pm.pl1_ping)
+                                punched = player1.kick.hit(player1.punch_effects, player1.vel*dm.pl1_ping)
                             if data["type"] == "flight_punch":
-                                punched = player1.flight_punch.hit(player1.punch_effects, player1.vel*pm.pl1_ping)
+                                punched = player1.flight_punch.hit(player1.punch_effects, player1.vel*dm.pl1_ping)
                             if data["type"] == "flight_kick":
-                                punched = player1.flight_kick.hit(player1.punch_effects, player1.vel*pm.pl1_ping)
+                                punched = player1.flight_kick.hit(player1.punch_effects, player1.vel*dm.pl1_ping)
                             if data["type"] == "crouch_punch":
-                                punched = player1.crouch_punch.hit(player1.punch_effects, player1.vel*pm.pl1_ping)
+                                punched = player1.crouch_punch.hit(player1.punch_effects, player1.vel*dm.pl1_ping)
                             if data["type"] == "crouch_kick":
-                                punched = player1.crouch_kick.hit(player1.punch_effects, player1.vel*pm.pl1_ping)
+                                punched = player1.crouch_kick.hit(player1.punch_effects, player1.vel*dm.pl1_ping)
                             if punched:
                                 new_data = {
                                     "name": "punched",
@@ -100,17 +132,17 @@ def client_handler(p1, p2, cl, conn, enemy_conn, addr):
                                 enemy_conn.send(json.dumps(new_data).encode("utf-8") + b"\n")
                         if cl == 2:
                             if data["type"] == "punch":
-                                punched = player2.punch.hit(player2.punch_effects, player2.vel*pm.pl2_ping)
+                                punched = player2.punch.hit(player2.punch_effects, player2.vel*dm.pl2_ping)
                             if data["type"] == "kick":
-                                punched = player2.kick.hit(player2.punch_effects, player2.vel*pm.pl2_ping)
+                                punched = player2.kick.hit(player2.punch_effects, player2.vel*dm.pl2_ping)
                             if data["type"] == "flight_punch":
-                                punched = player2.flight_punch.hit(player2.punch_effects, player2.vel*pm.pl2_ping)
+                                punched = player2.flight_punch.hit(player2.punch_effects, player2.vel*dm.pl2_ping)
                             if data["type"] == "flight_kick":
-                                punched = player2.flight_kick.hit(player2.punch_effects, player2.vel*pm.pl2_ping)
+                                punched = player2.flight_kick.hit(player2.punch_effects, player2.vel*dm.pl2_ping)
                             if data["type"] == "crouch_punch":
-                                punched = player2.crouch_punch.hit(player2.punch_effects, player2.vel*pm.pl2_ping)
+                                punched = player2.crouch_punch.hit(player2.punch_effects, player2.vel*dm.pl2_ping)
                             if data["type"] == "crouch_kick":
-                                punched = player2.crouch_kick.hit(player2.punch_effects, player2.vel*pm.pl2_ping)
+                                punched = player2.crouch_kick.hit(player2.punch_effects, player2.vel*dm.pl2_ping)
                             if punched:
                                 new_data = {
                                     "name": "punched",
@@ -119,11 +151,11 @@ def client_handler(p1, p2, cl, conn, enemy_conn, addr):
                                 enemy_conn.send(json.dumps(new_data).encode("utf-8") + b"\n")
                     if data["name"] == "ping":
                         if cl == 1:
-                            pm.pl1_ping = time.time()-pm.pl1_ping_timer_start
-                            pm.pl1_ping_fetched = True
+                            dm.pl1_ping = time.time()-dm.pl1_ping_timer_start
+                            dm.pl1_ping_fetched = True
                         if cl == 2:
-                            pm.pl2_ping = time.time()-pm.pl2_ping_timer_start
-                            pm.pl2_ping_fetched = True
+                            dm.pl2_ping = time.time()-dm.pl2_ping_timer_start
+                            dm.pl2_ping_fetched = True
                     if data["name"] == "hovered_button_changed":
                         enemy_conn.send(json.dumps(data).encode("utf-8") + b"\n")
                     if data["name"] == "choosen_card":
@@ -137,7 +169,52 @@ def client_handler(p1, p2, cl, conn, enemy_conn, addr):
                             p2.upgrades.append(l_cards[data["choosen_card"]-1])
                         player1, player2, map = load_map(player1, player2)
                         choosing_card = False
+                    if data["name"] == "disconnect":
+                        if cl == 1:
+                            dm.pl1_connected = False
+                        else:
+                            dm.pl2_connected = False
+                        return
 
+def connect_player(N):
+    global conn1, conn2, addr1, addr2, dm, s
+    if N == 1:
+        conn1, addr1 = s.accept()
+        dm.pl1_connected = True
+        conn1.send(b"1\n")
+    else:
+        conn2, addr2 = s.accept()
+        dm.pl2_connected = True
+        conn2.send(b"2\n")
+
+def connect_players():
+    global dm, conn1, conn2
+    if not dm.pl1_connected:
+        threading.Thread(target=connect_player, args=(1,)).start()
+    if not dm.pl2_connected:
+        threading.Thread(target=connect_player, args=(2,)).start()
+    while (not dm.pl1_connected) or (not dm.pl2_connected):
+        pass
+    conn1.send(b"game_start\n")
+    conn2.send(b"game_start\n")
+
+    th1 = threading.Thread(
+        target=client_handler, args=(player1, player2, 1, conn1, conn2, addr1)
+    )
+    th2 = threading.Thread(
+        target=client_handler, args=(player1, player2, 2, conn2, conn1, addr2)
+    )
+    th1.start()
+    th2.start()
+
+    th1 = threading.Thread(
+        target=ping_sender, args=(conn1, 1)
+    )
+    th2 = threading.Thread(
+        target=ping_sender, args=(conn2, 2)
+    )
+    th1.start()
+    th2.start()
 
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -145,43 +222,21 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind(("0.0.0.0", 8000))
 s.listen()
 
-conn1, addr1 = s.accept()
-conn1.send(b"1\n")
-conn2, addr2 = s.accept()
-conn2.send(b"2\n")
-
-conn1.send(b"game_start\n")
-conn2.send(b"game_start\n")
-
 player1 = ServerSidePlayer(350, 350, "r")
 player2 = ServerSidePlayer(450, 350, "l")
 player1.enemy = player2
 player2.enemy = player1
 player1, player2, map = load_map(player1, player2)
 
-th1 = threading.Thread(
-    target=client_handler, args=(player1, player2, 1, conn1, conn2, addr1)
-)
-th2 = threading.Thread(
-    target=client_handler, args=(player1, player2, 2, conn2, conn1, addr2)
-)
-th1.start()
-th2.start()
-
-th1 = threading.Thread(
-    target=ping_sender, args=(conn1, 1)
-)
-th2 = threading.Thread(
-    target=ping_sender, args=(conn2, 2)
-)
-th1.start()
-th2.start()
+threading.Thread(target=connect_players).start()
 
 pygame.init()
 clock = pygame.time.Clock()
 fps = 60
 start = time.time()
 while True:
+    if (not dm.pl1_connected) or (not dm.pl2_connected):
+        continue
     delta = clock.tick(fps) / 1000
 
     player1.logic(pl1_inp, delta, map, player2, GRAVITY)

@@ -14,6 +14,7 @@ from cards_randomizer import load_cards
 class DataHandler:
     hovered_button = 0
     game_state = "menu"
+    connected = False
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -44,7 +45,7 @@ N=0
 def server_handler(s):
     global player1, player2, pl1_inp, pl2_inp, N, cards_list, map,  dh
     buffer = ""
-    while True:
+    while dh.connected:
         chunk = s.recv(1024).decode("utf-8")
         buffer += chunk
         while "\n" in buffer:
@@ -119,12 +120,21 @@ def server_handler(s):
                             player1.flight_punch.hit_apply(player1.punch_effects)
                         if data["punch"] == "flight_kick":
                             player1.flight_kick.hit_apply(player1.punch_effects)
+                elif data["name"] == "disconnect":
+                    dh.game_state = "menu"
+                    s.close()
+                    return
+                elif data["name"] == "enemy_disconnect":
+                    dh.game_state = "waiting for player"
+                    player1, player2, map = load_map(player1, player2)
+    s.close()
 
 def connect():
     global dh, s, N
     dh.game_state = "waiting for server"
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((SERVER_NOTE, 8000))
+    dh.connected = True
     th = threading.Thread(
         target=server_handler, args=(s,)
     )
@@ -146,3 +156,9 @@ while running:
         running = loading(dh, HEIGHT, WIDTH, screen, running)
 
     pygame.display.flip()
+
+data = {
+    "name":"disconnect"
+}
+s.send(json.dumps(data).encode("utf-8")+b"\n")
+dh.connected = False
