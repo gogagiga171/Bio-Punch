@@ -30,7 +30,7 @@ def menu(start_button, running, connect, screen):
     start_button.draw(screen=screen)
     return running
 
-def loading(game_state, HEIGHT, WIDTH, screen, running):
+def loading(dh, HEIGHT, WIDTH, screen, running):
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -38,12 +38,12 @@ def loading(game_state, HEIGHT, WIDTH, screen, running):
     font_size = max(20, WIDTH // 10)
     font = pygame.font.Font(None, font_size)
 
-    text_surface = font.render(game_state, True, (0, 0, 0))
+    text_surface = font.render(dh.game_state, True, (0, 0, 0))
     text_rect = text_surface.get_rect(center=(WIDTH/2, HEIGHT/2))
     screen.blit(text_surface, text_rect)
     return running
 
-def game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N):
+def game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N, dh):
     pg_keys = pygame.key.get_pressed()
     keys = {
         "a": pg_keys[pygame.K_a],
@@ -85,24 +85,24 @@ def game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N):
             }
             s.send(json.dumps(data).encode("utf-8") + b"\n")
 
-    player1.draw(screen)
-    player2.draw(screen)
     for obs in map:
         obs.draw(screen)
+    player1.draw(screen)
+    player2.draw(screen)
 
     if player1.health <= 0:
-        game_state = "card_choosing"
+        dh.game_state = "card_choosing"
         looser = 1
     elif player2.health <= 0:
-        game_state = "card_choosing"
+        dh.game_state = "card_choosing"
         looser = 2
     else:
-        game_state = "game"
+        dh.game_state = "game"
         looser = None
 
-    return running, pl1_inp, pl2_inp, game_state, looser
+    return running, pl1_inp, pl2_inp, dh, looser
 
-def card_choosing(screen, s, cards_list, player1, player2, N, loser, running, WIDTH, HEIGHT, card_button_1, card_button_2, card_button_3, hovered_button, game_state):
+def card_choosing(screen, s, cards_list, player1, player2, N, loser, running, WIDTH, HEIGHT, card_button_1, card_button_2, card_button_3, dh):
     reload = False
 
     for event in pygame.event.get():
@@ -122,7 +122,7 @@ def card_choosing(screen, s, cards_list, player1, player2, N, loser, running, WI
                     "choosen_card": 1
                 }
                 s.send(json.dumps(data).encode("utf-8") + b"\n")
-                game_state = "game"
+                dh.game_state = "game"
             if card_button_2.hovered:
                 reload = True
                 if N == 1:
@@ -136,7 +136,7 @@ def card_choosing(screen, s, cards_list, player1, player2, N, loser, running, WI
                     "choosen_card": 2
                 }
                 s.send(json.dumps(data).encode("utf-8") + b"\n")
-                game_state = "game"
+                dh.game_state = "game"
             if card_button_3.hovered:
                 reload = True
                 if N == 1:
@@ -150,7 +150,7 @@ def card_choosing(screen, s, cards_list, player1, player2, N, loser, running, WI
                     "choosen_card": 3
                 }
                 s.send(json.dumps(data).encode("utf-8") + b"\n")
-                game_state = "game"
+                dh.game_state = "game"
 
     m_pos = Vector(pygame.mouse.get_pos())
     if N == loser:
@@ -158,46 +158,46 @@ def card_choosing(screen, s, cards_list, player1, player2, N, loser, running, WI
         card_button_2.check_in_button(m_pos)
         card_button_3.check_in_button(m_pos)
         if card_button_1.hovered:
-            if hovered_button.a != 1:
-                hovered_button.a = 1
+            if dh.hovered_button != 1:
+                dh.hovered_button = 1
                 data = {
                     "name": "hovered_button_changed",
-                    "hovered_button": hovered_button.a
+                    "hovered_button": dh.hovered_button
                 }
                 s.send(json.dumps(data).encode("utf-8") + b"\n")
         elif card_button_2.hovered:
-            if hovered_button.a != 2:
-                hovered_button.a = 2
+            if dh.hovered_button != 2:
+                dh.hovered_button = 2
                 data = {
                     "name": "hovered_button_changed",
-                    "hovered_button": hovered_button.a
+                    "hovered_button": dh.hovered_button
                 }
                 s.send(json.dumps(data).encode("utf-8") + b"\n")
         elif card_button_3.hovered:
-            if hovered_button.a != 3:
-                hovered_button.a = 3
+            if dh.hovered_button != 3:
+                dh.hovered_button = 3
                 data = {
                     "name": "hovered_button_changed",
-                    "hovered_button": hovered_button.a
+                    "hovered_button": dh.hovered_button
                 }
                 s.send(json.dumps(data).encode("utf-8") + b"\n")
         else:
-            if hovered_button.a != 0:
-                hovered_button.a = 0
+            if dh.hovered_button != 0:
+                dh.hovered_button = 0
                 data = {
                     "name": "hovered_button_changed",
-                    "hovered_button": hovered_button.a
+                    "hovered_button": dh.hovered_button
                 }
                 s.send(json.dumps(data).encode("utf-8") + b"\n")
     else:
         card_button_1.hovered = False
         card_button_2.hovered = False
         card_button_3.hovered = False
-        if hovered_button.a == 1:
+        if dh.hovered_button == 1:
             card_button_1.hovered = True
-        if hovered_button.a == 2:
+        if dh.hovered_button == 2:
             card_button_2.hovered = True
-        if hovered_button.a == 3:
+        if dh.hovered_button == 3:
             card_button_3.hovered = True
 
     for i in range(3):
@@ -232,4 +232,4 @@ def card_choosing(screen, s, cards_list, player1, player2, N, loser, running, WI
     text_rect = text_surface.get_rect(center=(WIDTH / 2, 550))
     screen.blit(text_surface, text_rect)
 
-    return running, hovered_button, game_state, reload
+    return running, dh, reload

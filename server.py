@@ -10,14 +10,18 @@ from cards_randomizer import get_cards, load_server_cards
 
 pl1_inp = {"a":False, "d":False, "w":False, "i": False, "k":False, "o":False, "l":False}
 pl2_inp = {"a":False, "d":False, "w":False, "i": False, "k":False, "o":False, "l":False}
-pl1_ping = 0
-pl2_ping = 0
-pl1_ping_fetched = False
-pl2_ping_fetched = False
-pl1_ping_timer_start = 0
-pl2_ping_timer_start = 0
 cards = []
 choosing_card = False
+
+class PingManager:
+    pl1_ping = 0
+    pl2_ping = 0
+    pl1_ping_fetched = False
+    pl2_ping_fetched = False
+    pl1_ping_timer_start = 0
+    pl2_ping_timer_start = 0
+
+pm = PingManager
 
 def send_info(conn1, conn2, player1, player2, pl1_inp, pl2_inp, health=False):
     data = {
@@ -37,23 +41,22 @@ def send_info(conn1, conn2, player1, player2, pl1_inp, pl2_inp, health=False):
     conn2.send(data_bytes + b"\n")
 
 def ping_sender(conn, pl):
-    global pl1_ping_fetched, pl2_ping_fetched, pl1_ping_timer_start, pl2_ping_timer_start
+    global pm
     conn.send(json.dumps({"name":"ping"}).encode("utf-8")+b"\n")
     if pl == 1:
-        pl1_ping_timer_start = time.time()
-        pl1_ping_fetched = False
-        while not pl1_ping_fetched:
-            time.sleep(1)
+        pm.pl1_ping_timer_start = time.time()
+        pm.pl1_ping_fetched = False
+        while not pm.pl1_ping_fetched:
+            time.sleep(2)
     if pl == 2:
-        pl2_ping_timer_start = time.time()
-        pl2_ping_fetched = False
-        while not pl2_ping_fetched:
+        pm.pl2_ping_timer_start = time.time()
+        pm.pl2_ping_fetched = False
+        while not pm.pl2_ping_fetched:
             time.sleep(2)
 
 def client_handler(p1, p2, cl, conn, enemy_conn, addr):
     global pl1_inp, pl2_inp, player1, player2, map
-    global pl1_ping, pl2_ping, pl1_ping_fetched, pl2_ping_fetched
-    global pl1_ping_timer_start, pl2_ping_timer_start, choosing_card
+    global pm, choosing_card
     global cards
     while True:
         buffer = ""
@@ -68,7 +71,7 @@ def client_handler(p1, p2, cl, conn, enemy_conn, addr):
                     except json.JSONDecodeError:
                         print("упс проблема с json")
                         continue
-
+                    print(f"Player{cl}: {data["name"]}")
                     if data["name"] == "inp":
                         if cl == 1:
                             pl1_inp = data["inp"]
@@ -79,41 +82,46 @@ def client_handler(p1, p2, cl, conn, enemy_conn, addr):
                     if data["name"] == "punch":
                         if cl == 1:
                             if data["type"] == "punch":
-                                punched = player1.punch.hit(player1.punch_effects, player1.vel*pl1_ping)
+                                punched = player1.punch.hit(player1.punch_effects, player1.vel*pm.pl1_ping)
                             if data["type"] == "kick":
-                                punched = player1.kick.hit(player1.punch_effects, player1.vel*pl1_ping)
+                                punched = player1.kick.hit(player1.punch_effects, player1.vel*pm.pl1_ping)
                             if data["type"] == "flight_punch":
-                                punched = player1.flight_punch.hit(player1.punch_effects, player1.vel*pl1_ping)
+                                punched = player1.flight_punch.hit(player1.punch_effects, player1.vel*pm.pl1_ping)
                             if data["type"] == "flight_kick":
-                                punched = player1.flight_kick.hit(player1.punch_effects, player1.vel*pl1_ping)
+                                punched = player1.flight_kick.hit(player1.punch_effects, player1.vel*pm.pl1_ping)
                             if data["type"] == "crouch_punch":
-                                punched = player1.crouch_punch.hit(player1.punch_effects, player1.vel*pl1_ping)
+                                punched = player1.crouch_punch.hit(player1.punch_effects, player1.vel*pm.pl1_ping)
                             if data["type"] == "crouch_kick":
-                                punched = player1.crouch_kick.hit(player1.punch_effects, player1.vel*pl1_ping)
+                                punched = player1.crouch_kick.hit(player1.punch_effects, player1.vel*pm.pl1_ping)
                             if punched:
+                                print("punched")
                                 send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
                         if cl == 2:
                             if data["type"] == "punch":
-                                punched = player2.punch.hit(player2.punch_effects, player2.vel*pl2_ping)
+                                print("punch" , pm.pl2_ping)
+                                punched = player2.punch.hit(player2.punch_effects, player2.vel*pm.pl2_ping)
                             if data["type"] == "kick":
-                                punched = player2.kick.hit(player2.punch_effects, player2.vel*pl2_ping)
+                                punched = player2.kick.hit(player2.punch_effects, player2.vel*pm.pl2_ping)
                             if data["type"] == "flight_punch":
-                                punched = player2.flight_punch.hit(player2.punch_effects, player2.vel*pl2_ping)
+                                punched = player2.flight_punch.hit(player2.punch_effects, player2.vel*pm.pl2_ping)
                             if data["type"] == "flight_kick":
-                                punched = player2.flight_kick.hit(player2.punch_effects, player2.vel*pl2_ping)
+                                punched = player2.flight_kick.hit(player2.punch_effects, player2.vel*pm.pl2_ping)
                             if data["type"] == "crouch_punch":
-                                punched = player2.crouch_punch.hit(player2.punch_effects, player2.vel*pl2_ping)
+                                punched = player2.crouch_punch.hit(player2.punch_effects, player2.vel*pm.pl2_ping)
                             if data["type"] == "crouch_kick":
-                                punched = player2.crouch_kick.hit(player2.punch_effects, player2.vel*pl2_ping)
+                                punched = player2.crouch_kick.hit(player2.punch_effects, player2.vel*pm.pl2_ping)
                             if punched:
                                 send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
+                                print("punched")
                     if data["name"] == "ping":
                         if cl == 1:
-                            pl1_ping = time.time()-pl1_ping_timer_start
-                            pl1_ping_fetched = True
+                            pm.pl1_ping = time.time()-pm.pl1_ping_timer_start
+                            pm.pl1_ping_fetched = True
+                            print(1, pm.pl1_ping)
                         if cl == 2:
-                            pl2_ping = time.time()-pl2_ping_timer_start
-                            pl2_ping_fetched = True
+                            pm.pl2_ping = time.time()-pm.pl2_ping_timer_start
+                            pm.pl2_ping_fetched = True
+                            print(2, pm.pl2_ping)
                     if data["name"] == "hovered_button_changed":
                         enemy_conn.send(json.dumps(data).encode("utf-8") + b"\n")
                     if data["name"] == "choosen_card":

@@ -11,8 +11,9 @@ import socket
 from game_states import game, loading, menu, card_choosing
 from cards_randomizer import load_cards
 
-class HoveredButton:
-    a = 0
+class DataHandler:
+    hovered_button = 0
+    game_state = "menu"
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -26,7 +27,7 @@ fps = 60
 running = True
 cards_list = []
 loser = None
-hovered_button = HoveredButton
+dh = DataHandler
 
 pl1_inp = {"a":False, "d":False, "w":False, "i":False, "k":False, "o":False, "l":False}
 pl2_inp = {"a":False, "d":False, "w":False, "i":False, "k":False, "o":False, "l":False}
@@ -37,12 +38,11 @@ player1.enemy = player2
 player2.enemy = player1
 player1, player2, map = load_map(player1, player2)
 
-game_state = "menu"
 s=0
 N=0
 
 def server_handler(s):
-    global player1, player2, pl1_inp, pl2_inp, game_state, N, cards_list, hovered_button, map
+    global player1, player2, pl1_inp, pl2_inp, N, cards_list, map,  dh
     buffer = ""
     while True:
         chunk = s.recv(1024).decode("utf-8")
@@ -51,11 +51,11 @@ def server_handler(s):
             data, buffer = buffer.split("\n", 1)
             if data.strip():
                 if data == "game_start":
-                    game_state = "game"
+                    dh.game_state = "game"
                     continue
                 elif data == "1" or data == "2":
                     N=int(data)
-                    game_state = "waiting for player"
+                    dh.game_state = "waiting for player"
                     if N == 1:
                         player1.update_sockets(s)
                         player2.update_punches_real_player(False)
@@ -82,20 +82,21 @@ def server_handler(s):
                 elif data["name"] == "cards_list":
                     cards_list = load_cards(data["cards"])
                 elif data["name"] == "hovered_button_changed":
-                    hovered_button.a = data["hovered_button"]
+                    dh.hovered_button = data["hovered_button"]
                 elif data["name"] == "choosen_card":
                     if N == 1:
-                        cards_list[data["choosen_card"]-1].when_applied(player1)
-                        player1.upgrades.append(cards_list[data["choosen_card"]-1])
-                    if N == 2:
                         cards_list[data["choosen_card"]-1].when_applied(player2)
                         player2.upgrades.append(cards_list[data["choosen_card"]-1])
+                    if N == 2:
+                        cards_list[data["choosen_card"]-1].when_applied(player1)
+                        player1.upgrades.append(cards_list[data["choosen_card"]-1])
                     player1, player2, map = load_map(player1, player2)
-                    game_state = "game"
+                    dh.game_state = "game"
+                    print("game after card")
 
 def connect():
-    global game_state, s, N
-    game_state = "waiting for server"
+    global dh, s, N
+    dh.game_state = "waiting for server"
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((SERVER_NOTE, 8000))
     th = threading.Thread(
@@ -107,15 +108,15 @@ while running:
     delta = clock.tick(fps)/1000
     screen.fill((255, 255, 255))
 
-    if game_state=="menu":
+    if dh.game_state=="menu":
         running = menu(start_button, running, connect, screen)
-    elif game_state=="game":
-        running, pl1_inp, pl2_inp, game_state, loser = game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N)
-    elif game_state=="card_choosing" and len(cards_list) != 0:
-        running, hovered_button, game_state, reload = card_choosing(screen, s, cards_list, player1, player2, N, loser, running, WIDTH, HEIGHT, card_button_1, card_button_2, card_button_3, hovered_button, game_state) #todo
+    elif dh.game_state=="game":
+        running, pl1_inp, pl2_inp, dh, loser = game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N, dh)
+    elif dh.game_state=="card_choosing" and len(cards_list) != 0:
+        running, dh, reload = card_choosing(screen, s, cards_list, player1, player2, N, loser, running, WIDTH, HEIGHT, card_button_1, card_button_2, card_button_3, dh) #todo
         if reload:
             player1, player2, map = load_map(player1, player2)
     else:
-        running = loading(game_state, HEIGHT, WIDTH, screen, running)
+        running = loading(dh, HEIGHT, WIDTH, screen, running)
 
     pygame.display.flip()

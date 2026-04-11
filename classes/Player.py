@@ -115,8 +115,8 @@ class Player:
 
     def draw(self, screen: pygame.surface.Surface):
         self.animation_set[self.current_animation].draw(self.pos, screen)
-        pygame.draw.rect(screen, (0, 255, 0), pygame.Rect(self.pos.x-10, self.pos.y-self.height-10, self.health/5, 5))
-        pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(self.pos.x-10+self.health/5, self.pos.y-self.height-10, (self.maxHealth-self.health)/5, 5))
+        pygame.draw.rect(screen, (0, 255, 0), pygame.Rect(self.pos.x-10, self.pos.y-self.height-10, self.health/(self.maxHealth/100*5), 5))
+        pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(self.pos.x-10+self.health/(self.maxHealth/100*5), self.pos.y-self.height-10, (self.maxHealth-self.health)/(self.maxHealth/100*5), 5))
 
     def check_collision(self, line):
         a = self.pos + Vector((-self.width/2, 0))
@@ -283,8 +283,13 @@ class Player:
             else:
                 self.start_hit(self.kick, "kick")
 
+        delete_effects = []
         for effect in self.effects:
-            effect.process()
+            stop = effect.process()
+            if stop:
+                delete_effects.append(effect)
+        for effect in delete_effects:
+            self.effects.remove(effect)
 
         for upgrade in self.upgrades:
             upgrade.logic(self)
@@ -530,6 +535,18 @@ class ServerSidePlayer(Player):
                 self.start_hit(self.crouch_kick, "kick")
             else:
                 self.start_hit(self.kick, "kick")
+
+        delete_effects = []
+        for effect in self.effects:
+            stop = effect.process()
+            if stop:
+                delete_effects.append(effect)
+
+        for effect in delete_effects:
+            self.effects.remove(effect)
+
+        for upgrade in self.upgrades:
+            upgrade.logic(self)
 
     def start_hit(self, punch_type, punch_type_str):
         if self.vel.x > 100:

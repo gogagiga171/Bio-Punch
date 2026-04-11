@@ -22,7 +22,8 @@ class Animation:
     def resize(self, size):
         for frame in self.animation:
             w, h = frame.image.get_size()
-            frame.image = pygame.transform.scale(frame.image, (int(w * size), int(h *size)))
+            frame.image = pygame.transform.scale(frame.image, (int(w * size**0.5), int(h * size**0.5)))
+            frame.offset *= size**0.5
 
     def start(self):
         self.start_time = time.time()

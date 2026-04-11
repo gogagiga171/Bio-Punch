@@ -1,4 +1,4 @@
-from classes.Player import Player
+from classes.Player import Player, ServerSidePlayer
 from classes.upgrades.Upgrade import Upgrade, ServerUpgrade
 
 class SUBig(ServerUpgrade):
@@ -6,13 +6,11 @@ class SUBig(ServerUpgrade):
     speed_multiplier = 0.7
     health_multiplier = 5
 
-    def when_applied(self, player:Player):
+    def when_applied(self, player:Player|ServerSidePlayer):
         player.height *= self.size_multiplier
         player.width *= self.size_multiplier
         player.speed *= self.speed_multiplier
         player.maxHealth *= self.health_multiplier
-        for i in player.animation_set.keys():
-            player.animation_set[i].resize(self.size_multiplier)
 
 class SUSmall(ServerUpgrade):
     size_multiplier = 0.8
@@ -24,8 +22,6 @@ class SUSmall(ServerUpgrade):
         player.width *= self.size_multiplier
         player.speed *= self.speed_multiplier
         player.maxHealth *= self.health_multiplier
-        for i in player.animation_set.keys():
-            player.animation_set[i].resize(self.size_multiplier)
 
 class UBig(Upgrade):
     image_name = "UBig.png"

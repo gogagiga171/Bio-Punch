@@ -21,14 +21,17 @@ class Poison(Effect):
     duration = 3
     damage = 10
     last_damage: float
+    start: float
     reload = 1
 
 
     def __init__(self, player: "Player"):
         self.last_damage = time.time()
+        self.start = time.time()
         super().__init__(player)
 
     def process(self):
         if time.time() - self.last_damage >= self.reload:
+            self.last_damage = time.time()
             self.player.health -= self.damage
-        super().process()
+        return super().process()

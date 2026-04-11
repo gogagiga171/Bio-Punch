@@ -10,7 +10,7 @@ def generate_frame_set_from_dir(path, offset, size, codes, player):
     return m
 
 def generate_animations(player):
-    default_offset = Vector([-45, -40])
+    default_offset = Vector([-45, -42])
     size = 1/2
 
     # Idle right
