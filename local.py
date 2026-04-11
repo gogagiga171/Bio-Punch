@@ -17,7 +17,7 @@ class DataHandler:
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-start_button = Button(Vector((200, 400)), 400, 100, "start game") #todo изменить магические числа
+start_button = Button(Vector((200, 400)), 400, 100, "start game")
 y = 470
 card_button_1 = Button(Vector((50, y)), 200, 50, "choose", _hovered_color=(255, 136, 0), _outline_width=6)
 card_button_2 = Button(Vector((300, y)), 200, 50, "choose", _hovered_color=(255, 136, 0), _outline_width=6)
@@ -92,7 +92,33 @@ def server_handler(s):
                         player1.upgrades.append(cards_list[data["choosen_card"]-1])
                     player1, player2, map = load_map(player1, player2)
                     dh.game_state = "game"
-                    print("game after card")
+                elif data["name"] == "punched":
+                    if N == 1:
+                        if data["punch"] == "punch":
+                            player2.punch.hit_apply(player2.punch_effects)
+                        if data["punch"] == "kick":
+                            player2.kick.hit_apply(player2.punch_effects)
+                        if data["punch"] == "crouch_punch":
+                            player2.crouch_punch.hit_apply(player2.punch_effects)
+                        if data["punch"] == "crouch_kick":
+                            player2.crouch_kick.hit_apply(player2.punch_effects)
+                        if data["punch"] == "flight_punch":
+                            player2.flight_punch.hit_apply(player2.punch_effects)
+                        if data["punch"] == "flight_kick":
+                            player2.flight_kick.hit_apply(player2.punch_effects)
+                    if N == 2:
+                        if data["punch"] == "punch":
+                            player1.punch.hit_apply(player1.punch_effects)
+                        if data["punch"] == "kick":
+                            player1.kick.hit_apply(player1.punch_effects)
+                        if data["punch"] == "crouch_punch":
+                            player1.crouch_punch.hit_apply(player1.punch_effects)
+                        if data["punch"] == "crouch_kick":
+                            player1.crouch_kick.hit_apply(player1.punch_effects)
+                        if data["punch"] == "flight_punch":
+                            player1.flight_punch.hit_apply(player1.punch_effects)
+                        if data["punch"] == "flight_kick":
+                            player1.flight_kick.hit_apply(player1.punch_effects)
 
 def connect():
     global dh, s, N
@@ -113,7 +139,7 @@ while running:
     elif dh.game_state=="game":
         running, pl1_inp, pl2_inp, dh, loser = game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N, dh)
     elif dh.game_state=="card_choosing" and len(cards_list) != 0:
-        running, dh, reload = card_choosing(screen, s, cards_list, player1, player2, N, loser, running, WIDTH, HEIGHT, card_button_1, card_button_2, card_button_3, dh) #todo
+        running, dh, reload = card_choosing(screen, s, cards_list, player1, player2, N, loser, running, WIDTH, card_button_1, card_button_2, card_button_3, dh)
         if reload:
             player1, player2, map = load_map(player1, player2)
     else:

@@ -102,7 +102,7 @@ def game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N, 
 
     return running, pl1_inp, pl2_inp, dh, looser
 
-def card_choosing(screen, s, cards_list, player1, player2, N, loser, running, WIDTH, HEIGHT, card_button_1, card_button_2, card_button_3, dh):
+def card_choosing(screen, s, cards_list, player1, player2, N, loser, running, WIDTH, card_button_1, card_button_2, card_button_3, dh):
     reload = False
 
     for event in pygame.event.get():

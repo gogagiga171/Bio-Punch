@@ -3,7 +3,7 @@ from classes.upgrades.Upgrade import Upgrade, ServerUpgrade
 
 class SUBig(ServerUpgrade):
     size_multiplier = 1.5
-    speed_multiplier = 0.7
+    speed_multiplier = 0.9
     health_multiplier = 5
 
     def when_applied(self, player:Player|ServerSidePlayer):
@@ -14,7 +14,7 @@ class SUBig(ServerUpgrade):
 
 class SUSmall(ServerUpgrade):
     size_multiplier = 0.8
-    speed_multiplier = 3
+    speed_multiplier = 1.25
     health_multiplier = 0.2
 
     def when_applied(self, player:Player):

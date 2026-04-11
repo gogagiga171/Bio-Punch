@@ -71,7 +71,6 @@ def client_handler(p1, p2, cl, conn, enemy_conn, addr):
                     except json.JSONDecodeError:
                         print("упс проблема с json")
                         continue
-                    print(f"Player{cl}: {data["name"]}")
                     if data["name"] == "inp":
                         if cl == 1:
                             pl1_inp = data["inp"]
@@ -94,11 +93,13 @@ def client_handler(p1, p2, cl, conn, enemy_conn, addr):
                             if data["type"] == "crouch_kick":
                                 punched = player1.crouch_kick.hit(player1.punch_effects, player1.vel*pm.pl1_ping)
                             if punched:
-                                print("punched")
-                                send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
+                                new_data = {
+                                    "name": "punched",
+                                    "punch": data["type"]
+                                }
+                                enemy_conn.send(json.dumps(new_data).encode("utf-8") + b"\n")
                         if cl == 2:
                             if data["type"] == "punch":
-                                print("punch" , pm.pl2_ping)
                                 punched = player2.punch.hit(player2.punch_effects, player2.vel*pm.pl2_ping)
                             if data["type"] == "kick":
                                 punched = player2.kick.hit(player2.punch_effects, player2.vel*pm.pl2_ping)
@@ -111,17 +112,18 @@ def client_handler(p1, p2, cl, conn, enemy_conn, addr):
                             if data["type"] == "crouch_kick":
                                 punched = player2.crouch_kick.hit(player2.punch_effects, player2.vel*pm.pl2_ping)
                             if punched:
-                                send_info(conn, enemy_conn, player1, player2, pl1_inp, pl2_inp, health=True)
-                                print("punched")
+                                new_data = {
+                                    "name": "punched",
+                                    "punch": data["type"]
+                                }
+                                enemy_conn.send(json.dumps(new_data).encode("utf-8") + b"\n")
                     if data["name"] == "ping":
                         if cl == 1:
                             pm.pl1_ping = time.time()-pm.pl1_ping_timer_start
                             pm.pl1_ping_fetched = True
-                            print(1, pm.pl1_ping)
                         if cl == 2:
                             pm.pl2_ping = time.time()-pm.pl2_ping_timer_start
                             pm.pl2_ping_fetched = True
-                            print(2, pm.pl2_ping)
                     if data["name"] == "hovered_button_changed":
                         enemy_conn.send(json.dumps(data).encode("utf-8") + b"\n")
                     if data["name"] == "choosen_card":

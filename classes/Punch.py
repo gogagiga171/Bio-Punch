@@ -54,37 +54,42 @@ class Punch:
     def check_reload(self, player):
         return time.time() > player.reload_time
 
+    def hit_apply(self, effects):
+        enemy = self.player.enemy
+        player = self.player
+        if enemy.block.block:
+            if player.orientation == "r":
+                enemy.vel += self.enemy_knock_back * (1 - enemy.block.knock_back_resist)
+                player.vel += self.player_knock_back
+            else:
+                enemy.vel.y += self.enemy_knock_back.y * (1 - enemy.block.knock_back_resist)
+                enemy.vel.x -= self.enemy_knock_back.x * (1 - enemy.block.knock_back_resist)
+                player.vel.y += self.player_knock_back.y
+                player.vel.x -= self.player_knock_back.x
+            enemy.health -= self.damage * (1 - enemy.block.damage_resist)
+            enemy.reload_time = time.time() + self.stun * (1 - enemy.block.stun_resist)
+            enemy.recovered_time = time.time() + self.stun * (1 - enemy.block.stun_resist)
+        else:
+            if player.orientation == "r":
+                enemy.vel += self.enemy_knock_back
+                player.vel += self.player_knock_back
+            else:
+                enemy.vel.y += self.enemy_knock_back.y
+                enemy.vel.x -= self.enemy_knock_back.x
+                player.vel.y += self.player_knock_back.y
+                player.vel.x -= self.player_knock_back.x
+            enemy.health -= self.damage
+            enemy.reload_time = time.time() + self.stun
+            enemy.recovered_time = time.time() + self.stun
+            for effect in effects:
+                enemy.effects.append(effect(enemy))
+
     def hit(self, effects: list, offset=Vector((0, 0))):
         if self.real_player:
             player = self.player
             enemy = self.player.enemy
             if self.check_col(player, enemy, offset):
-                if enemy.block.block:
-                    if player.orientation == "r":
-                        enemy.vel += self.enemy_knock_back * (1 - enemy.block.knock_back_resist)
-                        player.vel += self.player_knock_back
-                    else:
-                        enemy.vel.y += self.enemy_knock_back.y * (1 - enemy.block.knock_back_resist)
-                        enemy.vel.x -= self.enemy_knock_back.x * (1 - enemy.block.knock_back_resist)
-                        player.vel.y += self.player_knock_back.y
-                        player.vel.x -= self.player_knock_back.x
-                    enemy.health -= self.damage * (1 - enemy.block.damage_resist)
-                    enemy.reload_time = time.time() + self.stun * (1 - enemy.block.stun_resist)
-                    enemy.recovered_time = time.time() + self.stun * (1 - enemy.block.stun_resist)
-                else:
-                    if player.orientation == "r":
-                        enemy.vel += self.enemy_knock_back
-                        player.vel += self.player_knock_back
-                    else:
-                        enemy.vel.y += self.enemy_knock_back.y
-                        enemy.vel.x -= self.enemy_knock_back.x
-                        player.vel.y += self.player_knock_back.y
-                        player.vel.x -= self.player_knock_back.x
-                    enemy.health -= self.damage
-                    enemy.reload_time = time.time() + self.stun
-                    enemy.recovered_time = time.time() + self.stun
-                    for effect in effects:
-                        enemy.effects.append(effect(enemy))
+                self.hit_apply(effects)
                 if not self.server and self.socket:
                     data = {
                         "name": "punch",
