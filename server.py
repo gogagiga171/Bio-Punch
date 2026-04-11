@@ -179,6 +179,7 @@ def client_handler(p1, p2, cl, conn, enemy_conn, addr):
 def connect_player(N):
     global conn1, conn2, addr1, addr2, dm, s
     if N == 1:
+        print("started_connecting")
         conn1, addr1 = s.accept()
         dm.pl1_connected = True
         conn1.send(b"1\n")
@@ -188,7 +189,7 @@ def connect_player(N):
         conn2.send(b"2\n")
 
 def connect_players():
-    global dm, conn1, conn2
+    global dm, conn1, conn2, addr1, addr2, player1, player2
     if not dm.pl1_connected:
         threading.Thread(target=connect_player, args=(1,)).start()
     if not dm.pl2_connected:
@@ -216,6 +217,8 @@ def connect_players():
     th1.start()
     th2.start()
 
+    player1, player2, map = load_map(player1, player2)
+
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -226,7 +229,6 @@ player1 = ServerSidePlayer(350, 350, "r")
 player2 = ServerSidePlayer(450, 350, "l")
 player1.enemy = player2
 player2.enemy = player1
-player1, player2, map = load_map(player1, player2)
 
 threading.Thread(target=connect_players).start()
 
