@@ -41,6 +41,7 @@ class Player:
     punch_effects: list
     effects: list
     upgrades: list
+    keys: dict
 
     def __init__(self, _x, _y, _orientation, _socket=False): #warn поменять в PlyerServerSide тоже при изменении этого
         self.health = 100
@@ -75,6 +76,7 @@ class Player:
         self.punch_effects = []
         self.effects = []
         self.upgrades = []
+        self.keys = {}
 
     def update_sockets(self, _socket):
         self.punch.socket = _socket
@@ -443,6 +445,7 @@ class ServerSidePlayer(Player):
         self.punch_effects = []
         self.effects = []
         self.upgrades = []
+        self.keys = {}
 
     def reset_animation(self):
         raise NotImplementedError

@@ -13,6 +13,7 @@ pl2_inp = {"a":False, "d":False, "w":False, "i": False, "k":False, "o":False, "l
 cards = []
 choosing_card = False
 conn1 = conn2 = 0
+map = {}
 
 class dataManager:
     pl1_ping = 0
@@ -85,6 +86,7 @@ def ping_sender(conn, pl):
                     dm.pl2_connected = False
                     threading.Thread(target=connect_players).start()
                     return
+        time.sleep(2)
 
 def client_handler(p1, p2, cl, conn, enemy_conn, addr):
     global pl1_inp, pl2_inp, player1, player2, map
@@ -175,6 +177,12 @@ def client_handler(p1, p2, cl, conn, enemy_conn, addr):
                         else:
                             dm.pl2_connected = False
                         return
+                    if data["name"] == "button":
+                        if cl == 1:
+                            player1.keys[data["button"]].trigger(player1)
+                        else:
+                            player2.keys[data["button"]].trigger(player2)
+                        enemy_conn.send(json.dumps(data).encode("utf-8") + b"\n")
 
 def connect_player(N):
     global conn1, conn2, addr1, addr2, dm, s
@@ -189,7 +197,7 @@ def connect_player(N):
         conn2.send(b"2\n")
 
 def connect_players():
-    global dm, conn1, conn2, addr1, addr2, player1, player2
+    global dm, conn1, conn2, addr1, addr2, player1, player2, map
     if not dm.pl1_connected:
         threading.Thread(target=connect_player, args=(1,)).start()
     if not dm.pl2_connected:
@@ -240,7 +248,6 @@ while True:
     if (not dm.pl1_connected) or (not dm.pl2_connected):
         continue
     delta = clock.tick(fps) / 1000
-
     player1.logic(pl1_inp, delta, map, player2, GRAVITY)
     player2.logic(pl2_inp, delta, map, player1, GRAVITY)
 

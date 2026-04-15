@@ -63,6 +63,22 @@ def game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N, 
                 keys["o"] = True
             if event.key == pygame.K_l:
                 keys["l"] = True
+            if N == 1:
+                if pygame.key.name(event.key) in player1.keys.keys():
+                    player1.keys[pygame.key.name(event.key)].trigger(player1)
+                    data = {
+                        "name": "button",
+                        "button": pygame.key.name(event.key)
+                    }
+                    s.send(json.dumps(data).encode("utf-8") + b"\n")
+            else:
+                if pygame.key.name(event.key) in player2.keys.keys():
+                    player2.keys[pygame.key.name(event.key)].trigger(player1)
+                    data = {
+                        "name": "button",
+                        "button": pygame.key.name(event.key)
+                    }
+                    s.send(json.dumps(data).encode("utf-8") + b"\n")
 
     if N == 1:
         player1.logic(keys, delta, map, player2, GRAVITY)

@@ -13,6 +13,9 @@ class ServerUpgrade:
     def logic(self, player: Player):
         pass
 
+    def trigger(self, player: Player):
+        pass
+
 class Upgrade (ServerUpgrade):
     image: Surface
     image_path = "resources/upgrades/"
@@ -24,9 +27,3 @@ class Upgrade (ServerUpgrade):
         w, h = self.image.get_size()
         size = 1/2
         self.image = pygame.transform.scale(self.image, (int(w * size), int(h * size)))
-
-    def when_applied(self, player:Player):
-        pass
-
-    def logic(self, player:Player):
-        pass

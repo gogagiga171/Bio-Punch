@@ -79,6 +79,7 @@ def server_handler(s):
                     if N == 2:
                         pl1_inp = data["pl1_inp"]
                 elif data["name"] == "ping":
+                    print("ping")
                     s.send(json.dumps({"name":"ping"}).encode("utf-8")+b"\n")
                 elif data["name"] == "cards_list":
                     cards_list = load_cards(data["cards"])
@@ -127,6 +128,11 @@ def server_handler(s):
                 elif data["name"] == "enemy_disconnect":
                     dh.game_state = "waiting for player"
                     player1, player2, map = load_map(player1, player2)
+                elif data["name"] == "button":
+                    if N == 1:
+                        player2.keys[data["button"]].trigger(player2)
+                    elif N == 2:
+                        player1.keys[data["button"]].trigger(player1)
     s.close()
 
 def connect():
