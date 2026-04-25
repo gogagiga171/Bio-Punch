@@ -1,3 +1,5 @@
+import random
+
 import pygame
 from settings import SERVER, SERVER_NOTE
 import json
@@ -79,7 +81,6 @@ def server_handler(s):
                     if N == 2:
                         pl1_inp = data["pl1_inp"]
                 elif data["name"] == "ping":
-                    print("ping")
                     s.send(json.dumps({"name":"ping"}).encode("utf-8")+b"\n")
                 elif data["name"] == "cards_list":
                     cards_list = load_cards(data["cards"])

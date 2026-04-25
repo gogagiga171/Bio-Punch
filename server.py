@@ -47,14 +47,14 @@ def send_info(conn1, conn2, player1, player2, pl1_inp, pl2_inp, health=False):
 def ping_sender(conn, pl):
     global dm, conn1, conn2
     while True:
-        conn.send(json.dumps({"name":"ping"}).encode("utf-8")+b"\n")
         if pl == 1:
             dm.pl1_ping_timer_start = time.time()
             dm.pl1_ping_fetched = False
+            conn.send(json.dumps({"name": "ping"}).encode("utf-8") + b"\n")
             while not dm.pl1_ping_fetched:
                 time.sleep(2)
                 if time.time() - dm.pl1_ping_timer_start > 10 or not dm.pl1_connected:
-                    print("1 ping disconnected", time.time() - dm.pl1_ping_timer_start, dm.pl1_connected)
+                    print(f"1 ping disconnected, {time.time() - dm.pl1_ping_timer_start}, {dm.pl1_connected}")
                     if not dm.pl1_connected:
                         data = {
                             "name": "disconnect"
@@ -70,10 +70,11 @@ def ping_sender(conn, pl):
         if pl == 2:
             dm.pl2_ping_timer_start = time.time()
             dm.pl2_ping_fetched = False
+            conn.send(json.dumps({"name": "ping"}).encode("utf-8") + b"\n")
             while not dm.pl2_ping_fetched:
                 time.sleep(2)
                 if time.time() - dm.pl2_ping_timer_start > 10 or not dm.pl2_connected:
-                    print("2 ping disconnected", time.time() - dm.pl2_ping_timer_start, dm.pl2_connected)
+                    print(f"2 ping disconnected, {time.time() - dm.pl2_ping_timer_start}, {dm.pl2_connected}")
                     if not dm.pl2_connected:
                         data = {
                             "name": "disconnect"
@@ -187,7 +188,6 @@ def client_handler(p1, p2, cl, conn, enemy_conn, addr):
 def connect_player(N):
     global conn1, conn2, addr1, addr2, dm, s
     if N == 1:
-        print("started_connecting")
         conn1, addr1 = s.accept()
         dm.pl1_connected = True
         conn1.send(b"1\n")
