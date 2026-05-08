@@ -161,6 +161,8 @@ def client_handler(p1, p2, cl, conn, enemy_conn, addr):
                             dm.pl2_ping_fetched = True
                     if data["name"] == "hovered_button_changed":
                         enemy_conn.send(json.dumps(data).encode("utf-8") + b"\n")
+                    if data["name"] == "key_set":
+                        enemy_conn.send(json.dumps(data).encode("utf-8") + b"\n")
                     if data["name"] == "choosen_card":
                         enemy_conn.send(json.dumps(data).encode("utf-8") + b"\n")
                         l_cards = load_server_cards(cards)

@@ -1,5 +1,3 @@
-import random
-
 import pygame
 from settings import SERVER, SERVER_NOTE
 import json
@@ -29,6 +27,7 @@ clock = pygame.time.Clock()
 fps = 60
 running = True
 cards_list = []
+key_buttons = []
 loser = None
 dh = DataHandler
 
@@ -45,7 +44,7 @@ s=0
 N=0
 
 def server_handler(s):
-    global player1, player2, pl1_inp, pl2_inp, N, cards_list, map,  dh
+    global player1, player2, pl1_inp, pl2_inp, N, cards_list, key_buttons, map,  dh
     buffer = ""
     while dh.connected:
         chunk = s.recv(1024).decode("utf-8")
@@ -83,9 +82,11 @@ def server_handler(s):
                 elif data["name"] == "ping":
                     s.send(json.dumps({"name":"ping"}).encode("utf-8")+b"\n")
                 elif data["name"] == "cards_list":
-                    cards_list = load_cards(data["cards"])
+                    cards_list, key_buttons = load_cards(data["cards"])
                 elif data["name"] == "hovered_button_changed":
                     dh.hovered_button = data["hovered_button"]
+                elif data["name"] == "key_set":
+                    key_buttons[data["button_n"]].key = data["key"]
                 elif data["name"] == "choosen_card":
                     if N == 1:
                         cards_list[data["choosen_card"]-1].when_applied(player2)
@@ -156,7 +157,7 @@ while running:
     elif dh.game_state=="game":
         running, pl1_inp, pl2_inp, dh, loser = game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N, dh)
     elif dh.game_state=="card_choosing" and len(cards_list) != 0:
-        running, dh, reload = card_choosing(screen, s, cards_list, player1, player2, N, loser, running, WIDTH, card_button_1, card_button_2, card_button_3, dh)
+        running, dh, reload = card_choosing(screen, s, cards_list, key_buttons, player1, player2, N, loser, running, WIDTH, card_button_1, card_button_2, card_button_3, dh)
         if reload:
             player1, player2, map = load_map(player1, player2)
     else:

@@ -180,7 +180,7 @@ class Player:
             delta_left -= delta_seg
         return
 
-    def logic(self, inp, delta, map, enemy, grav): #warn поменять в PlyerServerSide тоже при изменении этого
+    def logic(self, inp, delta, map, enemy, grav): #warn поменять в PlayerServerSide тоже при изменении этого
         self.on_ground = False
         self.ground_line = None
         self.ground_normal = None
@@ -296,7 +296,7 @@ class Player:
         for upgrade in self.upgrades:
             upgrade.logic(self)
 
-    def start_hit(self, punch_type, punch_type_str): #warn поменять в PlyerServerSide тоже при изменении этого
+    def start_hit(self, punch_type, punch_type_str): #warn поменять в PlayerServerSide тоже при изменении этого
         if self.vel.x > 100:
             self.vel.x += -100
         if self.vel.x < -100:

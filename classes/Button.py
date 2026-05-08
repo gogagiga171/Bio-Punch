@@ -39,3 +39,41 @@ class Button:
 
     def check_in_button(self, _pos):
         self.hovered = (self.pos.x < _pos.x < self.pos.x + self.width) and (self.pos.y < _pos.y < self.pos.y + self.height)
+
+class KeyButton (Button):
+    key: str
+    selected: bool
+    warning: bool
+    warning_color: tuple[int, int, int]
+    selected_color: tuple[int, int, int]
+
+    def __init__(self, _pos: Vector, _width: int, _height: int, _color=(255, 255, 255), _outline_color=(150, 150, 150), _hovered_color=(200, 200, 200), _warning_color=(255, 50, 10), _selected_color=(255, 0, 255), _outline_width=2):
+        super().__init__(_pos, _width, _height, "", _color, _outline_color, _hovered_color, _outline_width)
+        self.warning_color = _warning_color
+        self.selected_color = _selected_color
+        self.key = ""
+        self.selected = False
+        self.warning = False
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, self.color, self.rect, border_radius=5)
+        if self.selected:
+            pygame.draw.rect(screen, self.selected_color, self.rect, width=self.outline_width, border_radius=5)
+        elif self.hovered:
+            pygame.draw.rect(screen, self.hovered_color, self.rect, width=self.outline_width, border_radius=5)
+        elif self.warning:
+            pygame.draw.rect(screen, self.warning_color, self.rect, width=self.outline_width, border_radius=5)
+        else:
+            pygame.draw.rect(screen, self.outline_color, self.rect, width=self.outline_width, border_radius=5)
+
+        font_size = max(20, self.height // 3)
+        font = pygame.font.Font(None, font_size)
+
+        text_surface = font.render(self.key, True, (0, 0, 0))
+        text_rect = text_surface.get_rect(center=self.rect.center)
+
+        screen.blit(text_surface, text_rect)
+
+    def empty(self):
+        return self.key == ""
+

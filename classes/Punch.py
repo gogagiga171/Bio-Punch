@@ -99,7 +99,7 @@ class Punch:
                 return True
             return False
 
-    def server_hit(self, player, enemy, ping, effects):
+    def server_hit(self, player, enemy, ping, effects): #todo адо будет обновить и сделать проверку на перезарядку чтобы избежать читинга
         offset = -player.vel * ping
         if player.vel.x > 100:
             player.vel.x += -100

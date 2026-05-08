@@ -3,6 +3,7 @@ from pygame import Surface
 import pygame
 
 class ServerUpgrade:
+    triggerable = False
 
     def __init__(self):
         pass

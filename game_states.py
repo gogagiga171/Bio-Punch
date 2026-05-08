@@ -118,58 +118,102 @@ def game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N, 
 
     return running, pl1_inp, pl2_inp, dh, looser
 
-def card_choosing(screen, s, cards_list, player1, player2, N, loser, running, WIDTH, card_button_1, card_button_2, card_button_3, dh):
+def card_choosing(screen, s, cards_list, key_buttons, player1, player2, N, loser, running, WIDTH, card_button_1, card_button_2, card_button_3, dh):
     reload = False
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.MOUSEBUTTONUP and N == loser:
+            # оброботка кнопок
             if card_button_1.hovered:
-                reload = True
-                if N == 1:
-                    cards_list[0].when_applied(player1)
-                    player1.upgrades.append(cards_list[0])
+                if cards_list[0].triggerable and key_buttons[0].empty:
+                    key_buttons[0].warning = True
                 else:
-                    cards_list[0].when_applied(player2)
-                    player2.upgrades.append(cards_list[0])
-                data = {
-                    "name": "choosen_card",
-                    "choosen_card": 1
-                }
-                s.send(json.dumps(data).encode("utf-8") + b"\n")
-                dh.game_state = "game"
+                    reload = True
+                    if N == 1:
+                        cards_list[0].when_applied(player1)
+                        player1.upgrades.append(cards_list[0])
+                        if cards_list[0].triggerable:
+                            player1.keys[key_buttons[0].key] = cards_list[0]
+                    else:
+                        cards_list[0].when_applied(player2)
+                        player2.upgrades.append(cards_list[0])
+                        if cards_list[0].triggerable:
+                            player2.keys[key_buttons[0].key] = cards_list[0]
+                    data = {
+                        "name": "choosen_card",
+                        "choosen_card": 1
+                    }
+                    s.send(json.dumps(data).encode("utf-8") + b"\n")
+                    dh.game_state = "game"
             if card_button_2.hovered:
-                reload = True
-                if N == 1:
-                    cards_list[1].when_applied(player1)
-                    player1.upgrades.append(cards_list[1])
+                if cards_list[1].triggerable and key_buttons[1].empty:
+                    key_buttons[1].warning = True
                 else:
-                    cards_list[1].when_applied(player2)
-                    player2.upgrades.append(cards_list[1])
-                data = {
-                    "name": "choosen_card",
-                    "choosen_card": 2
-                }
-                s.send(json.dumps(data).encode("utf-8") + b"\n")
-                dh.game_state = "game"
+                    reload = True
+                    if N == 1:
+                        cards_list[1].when_applied(player1)
+                        player1.upgrades.append(cards_list[1])
+                        if cards_list[1].triggerable:
+                            player1.keys[key_buttons[1].key] = cards_list[1]
+                    else:
+                        cards_list[1].when_applied(player2)
+                        player2.upgrades.append(cards_list[1])
+                        if cards_list[1].triggerable:
+                            player2.keys[key_buttons[1].key] = cards_list[1]
+                    data = {
+                        "name": "choosen_card",
+                        "choosen_card": 2
+                    }
+                    s.send(json.dumps(data).encode("utf-8") + b"\n")
+                    dh.game_state = "game"
             if card_button_3.hovered:
-                reload = True
-                if N == 1:
-                    cards_list[2].when_applied(player1)
-                    player1.upgrades.append(cards_list[2])
+                if cards_list[2].triggerable and key_buttons[2].empty:
+                    key_buttons[2].warning = True
                 else:
-                    cards_list[2].when_applied(player2)
-                    player2.upgrades.append(cards_list[2])
-                data = {
-                    "name": "choosen_card",
-                    "choosen_card": 3
-                }
-                s.send(json.dumps(data).encode("utf-8") + b"\n")
-                dh.game_state = "game"
+                    reload = True
+                    if N == 1:
+                        cards_list[2].when_applied(player1)
+                        player1.upgrades.append(cards_list[2])
+                        if cards_list[2].triggerable:
+                            player1.keys[key_buttons[2].key] = cards_list[2]
+                    else:
+                        cards_list[2].when_applied(player2)
+                        player2.upgrades.append(cards_list[2])
+                        if cards_list[2].triggerable:
+                            player2.keys[key_buttons[2].key] = cards_list[2]
+                    data = {
+                        "name": "choosen_card",
+                        "choosen_card": 3
+                    }
+                    s.send(json.dumps(data).encode("utf-8") + b"\n")
+                    dh.game_state = "game"
+
+            # оброботка кнопок-клавиш
+            for key_button in key_buttons:
+                if key_button and key_button.hovered:
+                    for k in key_buttons:
+                        if k:
+                            k.selected = False
+                    key_button.selected = not key_button.selected
+
+        if event.type == pygame.KEYDOWN:
+            key = pygame.key.name(event.key)
+            for i, key_button in enumerate(key_buttons):
+                if key_button and key_button.selected:
+                    key_button.key = key
+                    key_button.selected = False
+                    data = {
+                        "name": "key_set",
+                        "button_n": i,
+                        "key": key,
+                    }
+                    s.send(json.dumps(data).encode("utf-8") + b"\n")
 
     m_pos = Vector(pygame.mouse.get_pos())
     if N == loser:
+        #оброботка обычных кнопок (возможно поменяю в будущем)
         card_button_1.check_in_button(m_pos)
         card_button_2.check_in_button(m_pos)
         card_button_3.check_in_button(m_pos)
@@ -205,6 +249,13 @@ def card_choosing(screen, s, cards_list, player1, player2, N, loser, running, WI
                     "hovered_button": dh.hovered_button
                 }
                 s.send(json.dumps(data).encode("utf-8") + b"\n")
+
+        #обрботка кнопок-клавиш
+        for key_button in key_buttons:
+            if key_button:
+                key_button.check_in_button(m_pos)
+                if key_button.hovered or key_button.selected:
+                    key_button.warning = False
     else:
         card_button_1.hovered = False
         card_button_2.hovered = False
@@ -230,12 +281,16 @@ def card_choosing(screen, s, cards_list, player1, player2, N, loser, running, WI
         font_size = 20
         title_font = pygame.font.Font(None, title_font_size)
         font = pygame.font.Font(None, font_size)
-        card_button_1.draw(screen)
-        card_button_2.draw(screen)
-        card_button_3.draw(screen)
         auto_lining(cards_list[i].title, title_font, 20, x-5, 260, screen)
         auto_lining(cards_list[i].comment, font, 30, x-5, 315, screen)
         auto_lining(cards_list[i].description, font, 30, x-5, 370, screen)
+    card_button_1.draw(screen)
+    card_button_2.draw(screen)
+    card_button_3.draw(screen)
+
+    for key_button in key_buttons:
+        if key_button:
+            key_button.draw(screen)
 
     if N == loser:
         text = "Твой выбор"

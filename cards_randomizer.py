@@ -1,5 +1,7 @@
 from classes.upgrades.SizeUpgrades import UBig, USmall, SUBig, SUSmall
 from classes.upgrades.PoisonUpgrades import UPoisonPunch, UDisease, SUPoisonPunch, SUDisease
+from classes.Button import KeyButton
+from classes.Vector import Vector
 import random
 
 def get_cards():
@@ -29,6 +31,11 @@ def load_cards(cards):
     }
 
     cards_list = []
-    for card in cards:
+    key_buttons = []
+    for i, card in enumerate(cards):
         cards_list.append(cards_dict[card])
-    return cards_list
+        if cards_dict[card].triggerable:
+            key_buttons.append(KeyButton(Vector((50+250*i, 400)), 200, 50, ))
+        else:
+            key_buttons.append(None)
+    return cards_list, key_buttons
