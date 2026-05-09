@@ -29,6 +29,10 @@ class Vector:
     def __neg__(self):
         return Vector((-self.x, -self.y))
 
+    def from_angle_and_distance(self, angle, length):
+        self.x = math.cos(angle) * length
+        self.y = math.sin(angle) * length
+
     def dot(self, other):
         return self.x * other.x + self.y * other.y
 

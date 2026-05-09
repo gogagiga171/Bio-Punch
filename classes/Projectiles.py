@@ -4,7 +4,7 @@ from Vector import Vector
 
 
 class Projectile:
-    live_time: float
+    lifetime: float
     start_time: float
     direction: Vector
     speed: float
@@ -26,7 +26,7 @@ class Projectile:
         pass
 
     def logic(self, delta, players):
-        if time.time() - self.start_time > self.live_time:
+        if time.time() - self.start_time > self.lifetime:
             return True
         self.move(delta)
         for player in players:
@@ -41,7 +41,7 @@ class Bullet(Projectile):
 
     def __init__(self, _direction, _pos):
         super().__init__()
-        self.live_time = 0.5
+        self.lifetime = 0.5
         self.radius = 2.5
         self.direction = _direction
         self.speed = 500
@@ -73,4 +73,4 @@ class Bullet(Projectile):
 
     def affect(self, player):
         player.health -= self.damage
-        self.live_time = 0
+        self.lifetime = 0

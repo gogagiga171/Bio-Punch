@@ -14,7 +14,7 @@ class ServerUpgrade:
     def logic(self, player: Player):
         pass
 
-    def trigger(self, player: Player):
+    def trigger(self, player: Player, projectiles):
         pass
 
 class Upgrade (ServerUpgrade):
