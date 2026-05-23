@@ -1,3 +1,5 @@
+from idlelib.pyshell import restart_line
+
 import pygame
 import json
 import threading
@@ -43,7 +45,7 @@ def loading(dh, HEIGHT, WIDTH, screen, running):
     screen.blit(text_surface, text_rect)
     return running
 
-def game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N, dh):
+def game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N, dh, projectiles):
     pg_keys = pygame.key.get_pressed()
     keys = {
         "a": pg_keys[pygame.K_a],
@@ -65,20 +67,10 @@ def game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N, 
                 keys["l"] = True
             if N == 1:
                 if pygame.key.name(event.key) in player1.keys.keys():
-                    player1.keys[pygame.key.name(event.key)].trigger(player1)
-                    data = {
-                        "name": "button",
-                        "button": pygame.key.name(event.key)
-                    }
-                    s.send(json.dumps(data).encode("utf-8") + b"\n")
+                    player1.keys[pygame.key.name(event.key)].trigger(player1, projectiles)
             else:
                 if pygame.key.name(event.key) in player2.keys.keys():
-                    player2.keys[pygame.key.name(event.key)].trigger(player1)
-                    data = {
-                        "name": "button",
-                        "button": pygame.key.name(event.key)
-                    }
-                    s.send(json.dumps(data).encode("utf-8") + b"\n")
+                    player2.keys[pygame.key.name(event.key)].trigger(player1, projectiles)
 
     if N == 1:
         player1.logic(keys, delta, map, player2, GRAVITY)
@@ -100,11 +92,17 @@ def game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N, 
                 "inp": pl2_inp
             }
             s.send(json.dumps(data).encode("utf-8") + b"\n")
+    for prj in projectiles:
+        res = prj.logic(delta)
+        if res:
+            projectiles.remove(prj)
 
     for obs in map:
         obs.draw(screen)
     player1.draw(screen)
     player2.draw(screen)
+    for prj in projectiles:
+        prj.draw(screen)
 
     if player1.health <= 0:
         dh.game_state = "card_choosing"
@@ -127,7 +125,7 @@ def card_choosing(screen, s, cards_list, key_buttons, player1, player2, N, loser
         if event.type == pygame.MOUSEBUTTONUP and N == loser:
             # оброботка кнопок
             if card_button_1.hovered:
-                if cards_list[0].triggerable and key_buttons[0].empty:
+                if cards_list[0].triggerable and key_buttons[0].empty():
                     key_buttons[0].warning = True
                 else:
                     reload = True
@@ -148,7 +146,7 @@ def card_choosing(screen, s, cards_list, key_buttons, player1, player2, N, loser
                     s.send(json.dumps(data).encode("utf-8") + b"\n")
                     dh.game_state = "game"
             if card_button_2.hovered:
-                if cards_list[1].triggerable and key_buttons[1].empty:
+                if cards_list[1].triggerable and key_buttons[1].empty():
                     key_buttons[1].warning = True
                 else:
                     reload = True
@@ -169,7 +167,7 @@ def card_choosing(screen, s, cards_list, key_buttons, player1, player2, N, loser
                     s.send(json.dumps(data).encode("utf-8") + b"\n")
                     dh.game_state = "game"
             if card_button_3.hovered:
-                if cards_list[2].triggerable and key_buttons[2].empty:
+                if cards_list[2].triggerable and key_buttons[2].empty():
                     key_buttons[2].warning = True
                 else:
                     reload = True

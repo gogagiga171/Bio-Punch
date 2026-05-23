@@ -10,6 +10,7 @@ from map import load_map
 import socket
 from game_states import game, loading, menu, card_choosing
 from cards_randomizer import load_cards
+from classes.Projectiles import spawn_projectile
 
 class DataHandler:
     hovered_button = 0
@@ -30,12 +31,13 @@ cards_list = []
 key_buttons = []
 loser = None
 dh = DataHandler
+projectiles = []
 
 pl1_inp = {"a":False, "d":False, "w":False, "i":False, "k":False, "o":False, "l":False}
 pl2_inp = {"a":False, "d":False, "w":False, "i":False, "k":False, "o":False, "l":False}
 
-player1 = Player(350, 350, "r")
-player2 = Player(450, 350, "l")
+player1 = Player(350, 350, "r", None)
+player2 = Player(450, 350, "l", None)
 player1.enemy = player2
 player2.enemy = player1
 player1, player2, map = load_map(player1, player2)
@@ -44,7 +46,7 @@ s=0
 N=0
 
 def server_handler(s):
-    global player1, player2, pl1_inp, pl2_inp, N, cards_list, key_buttons, map,  dh
+    global player1, player2, pl1_inp, pl2_inp, N, cards_list, key_buttons, map, dh, projectiles
     buffer = ""
     while dh.connected:
         chunk = s.recv(1024).decode("utf-8")
@@ -135,13 +137,27 @@ def server_handler(s):
                         player2.keys[data["button"]].trigger(player2)
                     elif N == 2:
                         player1.keys[data["button"]].trigger(player1)
+                elif data["name"] == "projectile_affect":
+                    for i in projectiles:
+                        if i.id == data["id"]:
+                            res = i.affect()
+                            if res:
+                                projectiles.remove(i)
+                            break
+                elif data["name"] == "projectile_spawn":
+                    if data["host"] == 1:
+                        spawn_projectile(projectiles, player1, data["projectile_name"], data["data"])
+                    else:
+                        spawn_projectile(projectiles, player2, data["projectile_name"], data["data"])
     s.close()
 
 def connect():
-    global dh, s, N
+    global dh, s, N, player1, player2
     dh.game_state = "waiting for server"
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((SERVER_NOTE, 8000))
+    player1.socket = s
+    player2.socket = s
     dh.connected = True
     th = threading.Thread(
         target=server_handler, args=(s,)
@@ -155,7 +171,7 @@ while running:
     if dh.game_state=="menu":
         running = menu(start_button, running, connect, screen)
     elif dh.game_state=="game":
-        running, pl1_inp, pl2_inp, dh, loser = game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N, dh)
+        running, pl1_inp, pl2_inp, dh, loser = game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N, dh, projectiles)
     elif dh.game_state=="card_choosing" and len(cards_list) != 0:
         running, dh, reload = card_choosing(screen, s, cards_list, key_buttons, player1, player2, N, loser, running, WIDTH, card_button_1, card_button_2, card_button_3, dh)
         if reload:

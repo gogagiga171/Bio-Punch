@@ -7,6 +7,7 @@ from map import load_map
 from settings import MESSAGE_DELTA, GRAVITY
 from classes.Player import ServerSidePlayer
 from cards_randomizer import get_cards, load_server_cards
+from classes.upgrades.upgrades_funcs import load_upgrade
 
 pl1_inp = {"a":False, "d":False, "w":False, "i": False, "k":False, "o":False, "l":False}
 pl2_inp = {"a":False, "d":False, "w":False, "i": False, "k":False, "o":False, "l":False}
@@ -14,6 +15,7 @@ cards = []
 choosing_card = False
 conn1 = conn2 = 0
 map = {}
+projectiles = []
 
 class dataManager:
     pl1_ping = 0
@@ -90,7 +92,7 @@ def ping_sender(conn, pl):
         time.sleep(2)
 
 def client_handler(p1, p2, cl, conn, enemy_conn, addr):
-    global pl1_inp, pl2_inp, player1, player2, map
+    global pl1_inp, pl2_inp, player1, player2, map, projectiles
     global dm, choosing_card
     global cards
     while True:
@@ -180,12 +182,12 @@ def client_handler(p1, p2, cl, conn, enemy_conn, addr):
                         else:
                             dm.pl2_connected = False
                         return
-                    if data["name"] == "button":
+                    if data["name"] == "upgrade_triggered":
+                        upgrade = load_upgrade(data["upgrade_name"], data["data"])
                         if cl == 1:
-                            player1.keys[data["button"]].trigger(player1)
+                            upgrade.trigger(player1, projectiles)
                         else:
-                            player2.keys[data["button"]].trigger(player2)
-                        enemy_conn.send(json.dumps(data).encode("utf-8") + b"\n")
+                            upgrade.trigger(player2, projectiles)
 
 def connect_player(N):
     global conn1, conn2, addr1, addr2, dm, s
@@ -206,6 +208,8 @@ def connect_players():
         threading.Thread(target=connect_player, args=(2,)).start()
     while (not dm.pl1_connected) or (not dm.pl2_connected):
         pass
+    player1.socket = conn1
+    player2.socket = conn2
     conn1.send(b"game_start\n")
     conn2.send(b"game_start\n")
 
@@ -235,8 +239,8 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind(("0.0.0.0", 8000))
 s.listen()
 
-player1 = ServerSidePlayer(350, 350, "r")
-player2 = ServerSidePlayer(450, 350, "l")
+player1 = ServerSidePlayer(350, 350, "r", None, 1)
+player2 = ServerSidePlayer(450, 350, "l", None, 2)
 player1.enemy = player2
 player2.enemy = player1
 
@@ -252,6 +256,11 @@ while True:
     delta = clock.tick(fps) / 1000
     player1.logic(pl1_inp, delta, map, player2, GRAVITY)
     player2.logic(pl2_inp, delta, map, player1, GRAVITY)
+
+    for prj in projectiles:
+        res = prj.logic(delta)
+        if res:
+            projectiles.remove(prj)
 
     if time.time()-start>MESSAGE_DELTA:
         send_info(conn1, conn2, player1, player2, pl1_inp, pl2_inp)

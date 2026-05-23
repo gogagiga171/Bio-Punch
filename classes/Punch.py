@@ -5,7 +5,6 @@ from classes.Vector import Vector
 import time
 import pygame
 import json
-from socket import SocketIO
 
 class Punch:
     width: float
@@ -19,10 +18,9 @@ class Punch:
     stun: float
     server: bool
     type: str
-    socket: SocketIO
     real_player: bool
 
-    def __init__(self, _player, _server=False, _socket=None, _real_player = True):
+    def __init__(self, _player, _server=False, _real_player = True):
         self.width = 20
         self.height = 10
         self.damage = 5
@@ -34,7 +32,6 @@ class Punch:
         self.stun = 0.3
         self.server = _server
         self.type = "punch"
-        self.socket = _socket
         self.real_player = _real_player
 
     def rel_pos(self, p_width, p_height, p_orientation, p_pos):
@@ -90,12 +87,12 @@ class Punch:
             enemy = self.player.enemy
             if self.check_col(player, enemy, offset):
                 self.hit_apply(effects)
-                if not self.server and self.socket:
+                if not self.server and self.player.socket:
                     data = {
                         "name": "punch",
                         "type": self.type
                     }
-                    self.socket.send(json.dumps(data).encode("utf-8") + b"\n")
+                    self.player.socket.send(json.dumps(data).encode("utf-8") + b"\n")
                 return True
             return False
 
@@ -154,8 +151,8 @@ class Punch:
         return d
 
 class Kick(Punch):
-    def __init__(self, _player, _server=False, _socket=None):
-        super().__init__(_player, _server, _socket)
+    def __init__(self, _player, _server=False):
+        super().__init__(_player, _server)
         self.height = 10
         self.damage = 2
         self.reload = 0.3
@@ -174,8 +171,8 @@ class Kick(Punch):
         super().draw_hitbox(player, screen, color)
 
 class CrouchPunch(Punch):
-    def __init__(self, _player, _server=False, _socket=None):
-        super().__init__(_player, _server, _socket)
+    def __init__(self, _player, _server=False):
+        super().__init__(_player, _server)
         self.width=10
         self.height=30
         self.damage=2
@@ -191,8 +188,8 @@ class CrouchPunch(Punch):
             return Vector((p_pos.x + p_width / 2, p_pos.y - p_height - (self.height-25/2)))
 
 class CrouchKick(Kick):
-    def __init__(self, _player, _server=False, _socket=None):
-        super().__init__(_player, _server, _socket)
+    def __init__(self, _player, _server=False):
+        super().__init__(_player, _server)
         self.height = 7
         self.damage = 1
         self.knock_back = Vector((50, 0))
@@ -201,8 +198,8 @@ class CrouchKick(Kick):
         self.type = "crouch_kick"
 
 class FlightPunch(Punch):
-    def __init__(self, _player, _server=False, _socket=None):
-        super().__init__(_player, _server, _socket)
+    def __init__(self, _player, _server=False):
+        super().__init__(_player, _server)
         self.height = 35
         self.width = 35
         self.damage = 4
@@ -220,8 +217,8 @@ class FlightPunch(Punch):
             return Vector((p_pos.x+p_width/2, p_pos.y - p_height - 5))
 
 class FlightKick(Kick):
-    def __init__(self, _player, _server=False, _socket=None):
-        super().__init__(_player, _server, _socket)
+    def __init__(self, _player, _server=False):
+        super().__init__(_player, _server)
         self.height = 35
         self.width = 20
         self.damage = 8

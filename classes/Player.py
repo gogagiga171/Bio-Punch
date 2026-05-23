@@ -8,6 +8,7 @@ from settings import WIDTH, HEIGHT
 from animations import generate_animations
 import pygame
 import time
+import socket
 
 class Player:
     health: float
@@ -42,8 +43,10 @@ class Player:
     effects: list
     upgrades: list
     keys: dict
+    socket: socket.socket
 
-    def __init__(self, _x, _y, _orientation, _socket=False): #warn поменять в PlyerServerSide тоже при изменении этого
+    def __init__(self, _x, _y, _orientation, _socket): #warn поменять в PlyerServerSide тоже при изменении этого
+        self.socket = _socket
         self.health = 100
         self.maxHealth = 100
         self.width = 10
@@ -59,12 +62,12 @@ class Player:
         self.ground_normal = Vector((0, 1))
         self.ground_line = None
         self.orientation = _orientation
-        self.punch = Punch(self, _server=False, _socket=_socket)
-        self.kick = Kick(self, _server=False, _socket=_socket)
-        self.crouch_punch = CrouchPunch(self, _server=False, _socket=_socket)
-        self.crouch_kick = CrouchKick(self, _server=False, _socket=_socket)
-        self.flight_punch = FlightPunch(self, _server=False, _socket=_socket)
-        self.flight_kick = FlightKick(self, _server=False, _socket=_socket)
+        self.punch = Punch(self, _server=False)
+        self.kick = Kick(self, _server=False)
+        self.crouch_punch = CrouchPunch(self, _server=False)
+        self.crouch_kick = CrouchKick(self, _server=False)
+        self.flight_punch = FlightPunch(self, _server=False)
+        self.flight_kick = FlightKick(self, _server=False)
         self.block = Block()
         self.reload_time = time.time()
         self.recovered_time = time.time()
@@ -415,7 +418,9 @@ class Player:
 
 
 class ServerSidePlayer(Player):
-    def __init__(self, _x, _y, _orientation, _socket=None):
+    def __init__(self, _x, _y, _orientation, _socket, _n):
+        self.n = _n
+        self.socket = _socket
         self.health = 100
         self.maxHealth = 100
         self.width = 10
@@ -431,12 +436,12 @@ class ServerSidePlayer(Player):
         self.ground_normal = Vector((0, 1))
         self.ground_line = None
         self.orientation = _orientation
-        self.punch = Punch(self, _server=True, _socket=_socket)
-        self.kick = Kick(self, _server=True, _socket=_socket)
-        self.crouch_punch = CrouchPunch(self, _server=True, _socket=_socket)
-        self.crouch_kick = CrouchKick(self, _server=True, _socket=_socket)
-        self.flight_punch = FlightPunch(self, _server=True, _socket=_socket)
-        self.flight_kick = FlightKick(self, _server=True, _socket=_socket)
+        self.punch = Punch(self, _server=True)
+        self.kick = Kick(self, _server=True)
+        self.crouch_punch = CrouchPunch(self, _server=True)
+        self.crouch_kick = CrouchKick(self, _server=True)
+        self.flight_punch = FlightPunch(self, _server=True)
+        self.flight_kick = FlightKick(self, _server=True)
         self.block = Block()
         self.reload_time = time.time()
         self.recovered_time = time.time()

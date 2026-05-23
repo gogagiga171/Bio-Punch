@@ -1,11 +1,12 @@
 from classes.upgrades.SizeUpgrades import UBig, USmall, SUBig, SUSmall
 from classes.upgrades.PoisonUpgrades import UPoisonPunch, UDisease, SUPoisonPunch, SUDisease
+from classes.upgrades.ShotgunUpgrade import SUShotgun, UShotgun
 from classes.Button import KeyButton
 from classes.Vector import Vector
 import random
 
 def get_cards():
-    cards = ["Big", "Small", "PoisonPunch", "Disease"]
+    cards = ["Big", "Small", "PoisonPunch", "Disease", "Shotgun"]
     choosen_cards = random.sample(cards, 3)
     return choosen_cards
 
@@ -14,7 +15,8 @@ def load_server_cards(cards):
         "Big": SUBig(),
         "Small": SUSmall(),
         "PoisonPunch": SUPoisonPunch(),
-        "Disease": SUDisease()
+        "Disease": SUDisease(),
+        "Shotgun": SUShotgun(),
     }
 
     cards_list = []
@@ -27,7 +29,8 @@ def load_cards(cards):
         "Big": UBig(),
         "Small": USmall(),
         "PoisonPunch": UPoisonPunch(),
-        "Disease": UDisease()
+        "Disease": UDisease(),
+        "Shotgun": UShotgun()
     }
 
     cards_list = []
