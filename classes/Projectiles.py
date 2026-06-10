@@ -22,7 +22,7 @@ class Projectile:
     def move(self, delta):
         self.pos += self.direction * self.speed * delta
 
-    def check_collision(self):
+    def check_collision(self, delta):
         return False
 
     def affect(self):
@@ -35,9 +35,9 @@ class Projectile:
         c = False
         if time.time() - self.start_time > self.lifetime:
             return True
-        self.move(delta)
-        if self.server and self.check_collision():
+        if self.server and self.check_collision(delta):
             c = self.affect()
+        self.move(delta)
         return c
 
     def load_from_dict(self, _dict: dict):
@@ -96,24 +96,30 @@ class ServerBullet(Bullet):
         super().__init__(_direction, _host, _pos, _id)
         self.server = True
 
-    def check_collision(self):
+    def check_collision(self, delta):
+        for i in range(int(self.speed * delta / self.radius)+1):
+            if self.check_collision_iteration(self.pos + self.direction*self.radius*i):
+                return True
+        return False
+
+    def check_collision_iteration(self, pos):
         enemy = self.host.enemy
 
-        if self.pos.x < enemy.pos.x:
-            closest_x = enemy.pos.x
-        elif self.pos.x > enemy.pos.x + enemy.width:
-            closest_x = enemy.pos.x + enemy.width
+        if pos.x < enemy.pos.x - enemy.width/2:
+            closest_x = enemy.pos.x - enemy.width/2
+        elif pos.x > enemy.pos.x + enemy.width/2:
+            closest_x = enemy.pos.x + enemy.width/2
         else:
-            closest_x = self.pos.x
+            closest_x = pos.x
 
-        if self.pos.y < enemy.pos.y:
+        if pos.y < enemy.pos.y - enemy.height:
+            closest_y = enemy.pos.y - enemy.height
+        elif pos.y > enemy.pos.y:
             closest_y = enemy.pos.y
-        elif self.pos.y > enemy.pos.y + enemy.height:
-            closest_y = enemy.pos.y + enemy.height
         else:
-            closest_y = self.pos.y
+            closest_y = pos.y
 
-        distance = (self.pos - Vector((closest_x, closest_y))).length()
+        distance = (pos - Vector((closest_x, closest_y))).length()
 
         return distance < self.radius
 

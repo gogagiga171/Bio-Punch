@@ -92,7 +92,7 @@ def game(player1, player2, pl1_inp, pl2_inp, delta, screen, s, running, map, N, 
                 "inp": pl2_inp
             }
             s.send(json.dumps(data).encode("utf-8") + b"\n")
-    for prj in projectiles:
+    for prj in projectiles[:]:
         res = prj.logic(delta)
         if res:
             projectiles.remove(prj)

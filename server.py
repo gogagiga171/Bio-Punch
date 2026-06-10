@@ -257,7 +257,7 @@ while True:
     player1.logic(pl1_inp, delta, map, player2, GRAVITY)
     player2.logic(pl2_inp, delta, map, player1, GRAVITY)
 
-    for prj in projectiles:
+    for prj in projectiles[:]:
         res = prj.logic(delta)
         if res:
             projectiles.remove(prj)
