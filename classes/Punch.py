@@ -23,7 +23,7 @@ class Punch:
     def __init__(self, _player, _server=False, _real_player = True):
         self.width = 20
         self.height = 10
-        self.damage = 5
+        self.damage = 15
         self.player = _player
         self.enemy_knock_back = Vector((100, -50))
         self.player_knock_back = Vector((-20, -20))
@@ -154,7 +154,7 @@ class Kick(Punch):
     def __init__(self, _player, _server=False):
         super().__init__(_player, _server)
         self.height = 10
-        self.damage = 2
+        self.damage = 6
         self.reload = 0.3
         self.recovery_time = 0.3
         self.stun = 0.4
@@ -175,7 +175,7 @@ class CrouchPunch(Punch):
         super().__init__(_player, _server)
         self.width=10
         self.height=30
-        self.damage=2
+        self.damage=8
         self.enemy_knock_back = Vector((20, -500))
         self.player_knock_back = Vector((0, -450))
         self.stun = 0.4
@@ -191,7 +191,7 @@ class CrouchKick(Kick):
     def __init__(self, _player, _server=False):
         super().__init__(_player, _server)
         self.height = 7
-        self.damage = 1
+        self.damage = 5
         self.knock_back = Vector((50, 0))
         self.stun = 1
         self.player_knock_back = Vector((-5, 0))
@@ -202,7 +202,7 @@ class FlightPunch(Punch):
         super().__init__(_player, _server)
         self.height = 35
         self.width = 35
-        self.damage = 4
+        self.damage = 12
         self.enemy_knock_back = Vector((30, -70))
         self.player_knock_back = Vector((10, -70))
         self.stun = 0.3
@@ -221,7 +221,7 @@ class FlightKick(Kick):
         super().__init__(_player, _server)
         self.height = 35
         self.width = 20
-        self.damage = 8
+        self.damage = 25
         self.enemy_knock_back = Vector((100, 300))
         self.player_knock_back = Vector((-20, -10))
         self.stun = 1.3
